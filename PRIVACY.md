@@ -19,7 +19,7 @@ On pages under `facebook.com/marketplace`, the extension reads:
 - the text of listing cards (price, title, and location line), to decide
   whether each listing should be hidden;
 - the label of Marketplace's own location filter (for example
-  "Location: Richmond, Virginia, Within 40 mi"), so it can use the same
+  "Location: Springfield, Illinois, Within 40 mi"), so it can use the same
   location and radius you set on Facebook.
 
 When you open the extension's popup, it reads the address of the current tab

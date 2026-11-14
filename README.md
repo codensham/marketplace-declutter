@@ -78,9 +78,11 @@ Full details are in the [privacy policy](PRIVACY.md).
 | `lib/geo.js` | Pure logic: parsing, city lookup, distance, suggestions |
 | `popup.html`, `popup.js` | Settings and hidden counts |
 | `data/places.json` | About 50,000 US cities with coordinates |
+| `data/aliases.json` | Alternative names for cities Facebook spells differently |
 | `scripts/build-places.mjs` | Regenerates the city table (development only) |
 
-There is no build step and no runtime dependency.
+There is no build step and no runtime dependency. The reasoning behind the
+design is in [docs/design.md](docs/design.md).
 
 ## Development
 
@@ -111,6 +113,11 @@ images are in [store/](store/listing.md); the privacy policy is
 
 City data comes from GeoNames (CC BY 4.0) and the US Census Bureau (public
 domain). Details are in [NOTICE.md](NOTICE.md).
+
+## License
+
+[MIT](LICENSE). The bundled city data keeps its own terms; see
+[NOTICE.md](NOTICE.md).
 
 ## Disclaimer
 

@@ -11,7 +11,7 @@ hides both, so the grid shows only local listings within the chosen radius.
 ## Goals
 
 - Hide listings that are shipping-only.
-- Hide "Ad from seller" cards (added during the build at the user's request).
+- Hide "Ad from seller" cards.
 - Hide listings whose city is farther than the user's radius from their centre.
 - Stay very lightweight: no background worker, no network calls, no vendor,
   no framework, no build step for the extension itself.
