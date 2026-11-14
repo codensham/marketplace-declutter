@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { stripCensusSuffix, placeNames, buildTable } from '../scripts/build-places.mjs';
+import { stripCensusSuffix, placeNames, buildPostal, buildTable } from '../scripts/build-places.mjs';
 
 const H = 'USPS|GEOID|GEOIDFQ|ANSICODE|NAME|LSAD|FUNCSTAT|ALAND|AWATER|ALAND_SQMI|AWATER_SQMI|INTPTLAT|INTPTLONG';
 const row = (st, name, aland, lat, lon) =>
@@ -77,4 +77,25 @@ test('buildTable skips non-town county subdivisions', () => {
     row('NY', 'County subdivisions not defined', 10, '1.0', '1.0'),
   ].join('\n');
   assert.deepEqual(buildTable(H, c), {});
+});
+
+// GeoNames postal file: country, zip, city, state name, state, county, ..., lat, lon, accuracy
+const zip = (code, city, st, lat, lon) =>
+  ['US', code, city, 'X', st, 'X', '000', '', '', lat, lon, '4'].join('\t');
+
+test('buildPostal averages the ZIP centroids of each postal city', () => {
+  const t = buildPostal([
+    zip('23228', 'Henrico', 'VA', '37.600', '-77.500'),
+    zip('23229', 'Henrico', 'VA', '37.620', '-77.560'),
+    zip('23005', 'Ashland', 'VA', '37.759', '-77.480'),
+    'US\t00000\tNowhere\tX\t\tX\t000\t\t\t\t\t',
+  ].join('\n'));
+  assert.deepEqual(t, { 'henrico|VA': [37.61, -77.53], 'ashland|VA': [37.759, -77.48] });
+});
+
+test('buildTable: postal names win, Census fills the rest', () => {
+  const p = [H, row('VA', 'Ashland town', 10, '1.000000', '1.000000'), row('VA', 'Short Pump CDP', 10, '37.650000', '-77.610000')].join('\n');
+  const t = buildTable(p, H, zip('23005', 'Ashland', 'VA', '37.759', '-77.480'));
+  assert.deepEqual(t['ashland|VA'], [37.759, -77.48]);
+  assert.deepEqual(t['short pump|VA'], [37.65, -77.61]);
 });

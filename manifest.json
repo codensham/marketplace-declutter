@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Marketplace Local Filter",
+  "version": "0.1.0",
+  "description": "Hides Facebook Marketplace listings that are outside your radius, shipping-only, or seller ads.",
+  "permissions": ["storage"],
+  "action": {
+    "default_title": "Marketplace Local Filter",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/*"],
+      "js": ["lib/geo.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["data/places.json"],
+      "matches": ["https://www.facebook.com/*"]
+    }
+  ]
+}

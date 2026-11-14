@@ -54,3 +54,28 @@ test('decide', () => {
   assert.equal(G.decide('Dallas, TX', { ...S, center: null }, table), 'keep');
   assert.equal(G.decide('Ships to you', { ...S, center: null }, table), 'ship');
 });
+
+// Facebook prefixes the ad label with a zero-width space.
+const AD = '​Ad from seller';
+
+test('ad label is recognised despite the zero-width space', () => {
+  assert.equal(G.isAdMarker(AD), true);
+  assert.equal(G.isAdMarker('Ad from seller'), true);
+  assert.equal(G.isAdMarker('Richmond, VA'), false);
+  assert.equal(G.extractLocationLine(['$3,000', 'Walnut desk', AD]), AD);
+});
+
+test('decide hides seller ads unless hideAds is off', () => {
+  assert.equal(G.DEFAULT_SETTINGS.hideAds, true);
+  assert.equal(G.decide(AD, S, table), 'ad');
+  assert.equal(G.decide(AD, { ...S, hideAds: false }, table), 'keep');
+  assert.equal(G.decide(AD, { ...S, center: null }, table), 'ad');
+});
+
+test('card lines are trimmed of invisible characters', () => {
+  assert.deepEqual(G.cardLines('Just listed\n$4,000\n\n ​ \nKents Store, VA\n'), [
+    'Just listed',
+    '$4,000',
+    'Kents Store, VA',
+  ]);
+});
