@@ -34,7 +34,8 @@ deciding whether to hide them.
 Using the browser's extension storage, the extension saves:
 
 - your settings: whether it is on, the city and radius you typed (if any),
-  and whether to hide shipping-only listings and seller ads;
+  and whether to hide shipping-only listings, seller ads, and listings
+  with an unknown city;
 - the last location and radius read from Marketplace's location filter, so
   the next page can be filtered without waiting for it.
 

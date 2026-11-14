@@ -11,7 +11,6 @@
 (() => {
   const G = globalThis.MLFGeo;
   const ITEM = 'a[href*="/marketplace/item/"]';
-  const HIDING = new Set(['ad', 'ship', 'far']);
   const MAX_NUDGES = 5;
 
   let settings = { ...G.DEFAULT_SETTINGS };
@@ -138,7 +137,7 @@
         cell.removeAttribute('data-mlf-tries');
       }
       if (final) for (const a of anchors) a.setAttribute('data-mlf-seen', '');
-      if (HIDING.has(verdict)) {
+      if (G.hides(verdict, active, final)) {
         cell.setAttribute('data-mlf-hidden', verdict);
         hid++;
       } else {
@@ -217,6 +216,7 @@
       unknownSamples: G.unknownSamples(
         [...document.querySelectorAll('[data-mlf="unknown"]')].map((c) => c.getAttribute('data-mlf-loc')),
       ),
+      unknownHidden: Boolean(active?.hideUnknown),
       active: onMarketplace(),
       source: active?.source ?? 'manual',
       centerLabel: active?.centerLabel ?? '',

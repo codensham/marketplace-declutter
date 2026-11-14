@@ -21,9 +21,12 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 | Out of range | Its city is farther from your centre than your radius |
 | Shipping-only | It is marked "Ships to you" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
+| Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
 
 A listing is only hidden when the extension is sure. If a city is not
-recognised, the listing stays visible and is counted as "unknown city".
+recognised, the listing stays visible and is counted as "unknown city";
+the popup can list those cities. An unrecognised city in a state that lies
+entirely outside your radius is treated as out of range.
 
 ## Install
 

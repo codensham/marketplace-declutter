@@ -20,6 +20,7 @@ WHAT IT HIDES
 • Listings whose city is farther away than your radius
 • Shipping-only listings ("Ships to you") – can be turned off
 • Ads from sellers – can be turned off
+• Listings whose city can't be placed – only if you turn this on
 
 NO SETUP NEEDED
 The extension uses the location and radius you already set in Marketplace's own location filter. Want a different area? Open the popup and start typing a city: matching US cities appear as you type, nearest first.

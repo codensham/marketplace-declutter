@@ -289,3 +289,19 @@ test('decide: unknown city, far state → far; near or unbounded → unknown', (
   assert.equal(G.decide('Hollywoodish, CA', { ...mid, center: null }, {}, sb), 'unknown');
   assert.equal(G.decide('Hollywoodish, CA', mid, {}), 'unknown'); // no bounds given
 });
+
+test('hides: unknown only when the switch is on', () => {
+  const s = G.DEFAULT_SETTINGS;
+  assert.equal(s.hideUnknown, false);
+  assert.equal(G.hides('unknown', s), false);
+  assert.equal(G.hides('unknown', { ...s, hideUnknown: true }), true);
+  for (const v of ['ad', 'ship', 'far']) assert.equal(G.hides(v, s), true);
+  assert.equal(G.hides('keep', { ...s, hideUnknown: true }), false);
+});
+
+test('hides: an unknown card waits until its re-checks are over', () => {
+  const on = { ...G.DEFAULT_SETTINGS, hideUnknown: true };
+  assert.equal(G.hides('unknown', on, false), false);
+  assert.equal(G.hides('unknown', on, true), true);
+  assert.equal(G.hides('far', on, false), true);
+});

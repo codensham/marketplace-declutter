@@ -7,6 +7,7 @@
   const radius = $('radius');
   const hideShipping = $('hideShipping');
   const hideAds = $('hideAds');
+  const hideUnknown = $('hideUnknown');
   const useFacebook = $('useFacebook');
   const source = $('source');
   const status = $('status');
@@ -17,12 +18,21 @@
   let unknownSamples = [];
 
   copyUnknown.addEventListener('click', async () => {
+    const text = unknownSamples.join('\n');
+    let copied = false;
     try {
-      await navigator.clipboard.writeText(unknownSamples.join('\n'));
-      copyUnknown.textContent = 'Copied';
+      await navigator.clipboard.writeText(text);
+      copied = true;
     } catch {
-      copyUnknown.textContent = 'Copy failed';
+      // Older copy path, for pages where the clipboard API is not allowed.
+      const area = document.createElement('textarea');
+      area.value = text;
+      document.body.append(area);
+      area.select();
+      copied = document.execCommand('copy');
+      area.remove();
     }
+    copyUnknown.textContent = copied ? 'Copied' : 'Copy failed';
     setTimeout(() => (copyUnknown.textContent = 'Copy'), 1500);
   });
 
@@ -55,6 +65,7 @@
     enabled.checked = settings.enabled;
     hideShipping.checked = settings.hideShipping;
     hideAds.checked = settings.hideAds;
+    hideUnknown.checked = settings.hideUnknown;
     useFacebook.hidden = !settings.manualOverride;
     if (shown.source === 'facebook') {
       source.textContent = "Matching Facebook's location. Edit to override.";
@@ -78,6 +89,7 @@
   enabled.addEventListener('change', () => save({ enabled: enabled.checked }));
   hideShipping.addEventListener('change', () => save({ hideShipping: hideShipping.checked }));
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
+  hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
   useFacebook.addEventListener('click', () => save({ manualOverride: false }));
 
   // Editing either field switches to a manual location made of both fields
@@ -178,7 +190,7 @@
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
       counts.textContent = `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · `;
-      const unknownText = `${c.unknown} unknown city`;
+      const unknownText = `${c.unknown} unknown city${c.unknownHidden ? ' (hidden)' : ''}`;
       unknownSamples = c.unknownSamples ?? [];
       if (c.unknown > 0 && unknownSamples.length) {
         // The phrase opens a list of the location lines that were not recognised.
