@@ -23,3 +23,6 @@ desktop.ini
 *.log
 .env
 .env.*
+
+# Packaged extension
+dist/

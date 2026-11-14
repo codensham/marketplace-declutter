@@ -55,6 +55,8 @@ The popup also shows how many listings were hidden on the current page and why.
   filter. Nothing about you or your browsing leaves your machine.
 - Settings are saved with Chrome's extension storage.
 
+Full details are in the [privacy policy](PRIVACY.md).
+
 ## Limitations
 
 - United States only.
@@ -90,6 +92,17 @@ files and the command.
 
 After changing code, click the reload icon for the extension at
 `chrome://extensions`, then refresh the Marketplace tab.
+
+## Publishing
+
+```
+npm run package
+```
+
+builds `dist/marketplace-declutter-<version>.zip` containing only the files
+the extension loads. Store listing text, permission justifications and
+images are in [store/](store/listing.md); the privacy policy is
+[PRIVACY.md](PRIVACY.md).
 
 ## Data sources
 
