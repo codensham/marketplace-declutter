@@ -63,7 +63,7 @@ address with a new effective date.
 
 ## Contact
 
-Questions about this policy: [CONTACT EMAIL]
+Questions about this policy: codensham@gmail.com
 
 Marketplace Declutter is an independent project and is not affiliated with,
 endorsed by, or sponsored by Meta or Facebook.
