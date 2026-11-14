@@ -233,3 +233,12 @@ test('unknownSamples: distinct, capped at 20, empty named', () => {
   assert.equal(G.unknownSamples(many).length, 20);
   assert.deepEqual(G.unknownSamples([]), []);
 });
+
+test('shouldRejudge: new cards and unknown cards up to 3 tries', () => {
+  assert.equal(G.MAX_UNKNOWN_TRIES, 3);
+  assert.equal(G.shouldRejudge(null, 0), true);
+  assert.equal(G.shouldRejudge('unknown', 1), true);
+  assert.equal(G.shouldRejudge('unknown', 2), true);
+  assert.equal(G.shouldRejudge('unknown', 3), false);
+  for (const v of ['keep', 'far', 'ship', 'ad']) assert.equal(G.shouldRejudge(v, 0), false);
+});

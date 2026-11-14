@@ -93,35 +93,58 @@
 
     // Read everything first, then write. Hiding a card between reads would
     // make the browser redo layout for every card measured after it.
+    // An anchor is marked seen once its card has a final verdict; anchors of
+    // unknown cards stay unseen so later passes can read the card again.
     const seen = [];
-    const judged = new Map(); // cell -> { verdict, loc }
+    const judged = new Map(); // cell -> { verdict, loc, tries, isNew, anchors }
     for (const anchor of document.querySelectorAll(`${ITEM}:not([data-mlf-seen])`)) {
       if (!itemId(anchor)) {
         seen.push(anchor);
         continue;
       }
       const cell = cellOf(anchor);
-      if (!cell.hasAttribute('data-mlf') && !judged.has(cell)) {
-        const lines = G.cardLines(cell.innerText);
-        if (!lines.length) continue; // text not rendered yet; look again on the next pass
-        const loc = G.extractLocationLine(lines);
-        judged.set(cell, { verdict: G.decide(loc, active, table), loc: loc ?? '' });
+      const entry = judged.get(cell);
+      if (entry) {
+        entry.anchors.push(anchor);
+        continue;
       }
-      seen.push(anchor);
+      const previous = cell.getAttribute('data-mlf');
+      const tries = Number(cell.getAttribute('data-mlf-tries')) || 0;
+      if (!G.shouldRejudge(previous, tries)) {
+        seen.push(anchor);
+        continue;
+      }
+      const lines = G.cardLines(cell.innerText);
+      if (!lines.length) continue; // text not rendered yet; look again on the next pass
+      const loc = G.extractLocationLine(lines);
+      const verdict = G.decide(loc, active, table);
+      judged.set(cell, { verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
     }
 
     for (const anchor of seen) anchor.setAttribute('data-mlf-seen', '');
     let hid = 0;
-    for (const [cell, { verdict, loc }] of judged) {
+    let fresh = 0;
+    for (const [cell, { verdict, loc, tries, isNew, anchors }] of judged) {
       cell.setAttribute('data-mlf', verdict);
       cell.setAttribute('data-mlf-loc', loc);
+      if (isNew) fresh++;
+      let final = true;
+      if (verdict === 'unknown') {
+        cell.setAttribute('data-mlf-tries', String(tries + 1));
+        final = tries + 1 >= G.MAX_UNKNOWN_TRIES;
+      } else {
+        cell.removeAttribute('data-mlf-tries');
+      }
+      if (final) for (const a of anchors) a.setAttribute('data-mlf-seen', '');
       if (HIDING.has(verdict)) {
         cell.setAttribute('data-mlf-hidden', verdict);
         hid++;
+      } else {
+        cell.removeAttribute('data-mlf-hidden');
       }
     }
 
-    if (judged.size) nudges = 0;
+    if (fresh) nudges = 0;
     if (hid) nudgeIfShort();
   }
 
@@ -153,6 +176,7 @@
     for (const el of document.querySelectorAll('[data-mlf], [data-mlf-hidden], [data-mlf-seen]')) {
       el.removeAttribute('data-mlf');
       el.removeAttribute('data-mlf-loc');
+      el.removeAttribute('data-mlf-tries');
       el.removeAttribute('data-mlf-hidden');
       el.removeAttribute('data-mlf-seen');
     }
