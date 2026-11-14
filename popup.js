@@ -3,6 +3,7 @@
   const $ = (id) => document.getElementById(id);
   const enabled = $('enabled');
   const city = $('city');
+  const suggestions = $('suggestions');
   const radius = $('radius');
   const hideShipping = $('hideShipping');
   const hideAds = $('hideAds');
@@ -16,6 +17,7 @@
   // Facebook's own location filter, as last read by the content script.
   let fbLocation = (await chrome.storage.local.get('fbLocation')).fbLocation ?? null;
   const table = await fetch(chrome.runtime.getURL('data/places.json')).then((r) => r.json());
+  const cityIndex = G.buildCityIndex(table);
 
   function showError(message) {
     status.textContent = message;
@@ -67,6 +69,78 @@
     }
     return save({ manualOverride: true, centerLabel: label, center: coords, radiusMiles: miles });
   }
+
+  // Suggestions under the city field while typing: nearest matches first,
+  // measured from the location currently in effect.
+  let matches = [];
+  let active = -1;
+
+  function closeSuggestions() {
+    matches = [];
+    active = -1;
+    suggestions.hidden = true;
+    suggestions.replaceChildren();
+    city.setAttribute('aria-expanded', 'false');
+    city.removeAttribute('aria-activedescendant');
+  }
+
+  function highlight(index) {
+    active = index;
+    [...suggestions.children].forEach((li, i) => li.setAttribute('aria-selected', i === active));
+    city.setAttribute('aria-activedescendant', `suggestion-${active}`);
+  }
+
+  function showSuggestions() {
+    const near = G.effectiveSettings(settings, fbLocation, table).center;
+    matches = G.suggestCities(cityIndex, city.value, near);
+    if (!matches.length) return closeSuggestions();
+    suggestions.replaceChildren(
+      ...matches.map((match, i) => {
+        const li = document.createElement('li');
+        li.id = `suggestion-${i}`;
+        li.setAttribute('role', 'option');
+        li.textContent = match.label;
+        return li;
+      }),
+    );
+    suggestions.hidden = false;
+    city.setAttribute('aria-expanded', 'true');
+    highlight(0);
+  }
+
+  function pickSuggestion(index) {
+    city.value = matches[index].label;
+    closeSuggestions();
+    saveManualLocation();
+  }
+
+  city.addEventListener('input', showSuggestions);
+  city.addEventListener('keydown', (e) => {
+    if (suggestions.hidden) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const step = e.key === 'ArrowDown' ? 1 : -1;
+      highlight((active + step + matches.length) % matches.length);
+    } else if (e.key === 'Enter' || e.key === 'Tab') {
+      if (e.key === 'Enter') e.preventDefault();
+      pickSuggestion(active);
+    } else if (e.key === 'Escape') {
+      e.preventDefault(); // keep the popup open; just close the list
+      closeSuggestions();
+    }
+  });
+  // mousedown, not click, so the field keeps focus and does not fire `change`
+  // with the half-typed text first.
+  suggestions.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const li = e.target.closest('li');
+    if (li) pickSuggestion([...suggestions.children].indexOf(li));
+  });
+  suggestions.addEventListener('mousemove', (e) => {
+    const li = e.target.closest('li');
+    if (li) highlight([...suggestions.children].indexOf(li));
+  });
+  city.addEventListener('blur', closeSuggestions);
 
   city.addEventListener('change', saveManualLocation);
   radius.addEventListener('change', saveManualLocation);

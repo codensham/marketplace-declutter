@@ -159,3 +159,57 @@ test('effectiveSettings: a location changed by hand overrides Facebook', () => {
 test('manualOverride is off by default', () => {
   assert.equal(G.DEFAULT_SETTINGS.manualOverride, false);
 });
+
+const cityTable = {
+  'fredericksburg|VA': [38.303, -77.461],
+  'fredericksburg|TX': [30.275, -98.872],
+  'frederick|MD': [39.414, -77.411],
+  'fredonia|NY': [42.44, -79.332],
+  'saint louis|MO': [38.627, -90.198],
+  'winston-salem|NC': [36.1, -80.244],
+};
+const cityIndex = G.buildCityIndex(cityTable);
+const richmond = [37.541, -77.436];
+const labels = (q, near, limit) => G.suggestCities(cityIndex, q, near, limit).map((c) => c.label);
+
+test('buildCityIndex makes display labels', () => {
+  const all = cityIndex.map((c) => c.label);
+  assert.ok(all.includes('Fredericksburg, VA'));
+  assert.ok(all.includes('Saint Louis, MO'));
+  assert.ok(all.includes('Winston-Salem, NC'));
+});
+test('suggestCities matches the start of the city name, nearest first', () => {
+  assert.deepEqual(labels('fred', richmond), [
+    'Fredericksburg, VA',
+    'Frederick, MD',
+    'Fredonia, NY',
+    'Fredericksburg, TX',
+  ]);
+  assert.deepEqual(labels('FRED', [30.267, -97.743])[0], 'Fredericksburg, TX');
+});
+test('suggestCities ranks a nearby longer name above a far exact one', () => {
+  const index = G.buildCityIndex({ ...cityTable, 'fred|TX': [30.575, -94.176] });
+  const got = G.suggestCities(index, 'fred', richmond).map((c) => c.label);
+  assert.equal(got[0], 'Fredericksburg, VA');
+  assert.equal(got.at(-1), 'Fredericksburg, TX');
+});
+test('suggestCities sorts by name when there is no centre', () => {
+  assert.deepEqual(labels('fred', null), [
+    'Frederick, MD',
+    'Fredericksburg, TX',
+    'Fredericksburg, VA',
+    'Fredonia, NY',
+  ]);
+});
+test('suggestCities narrows by a typed state', () => {
+  assert.deepEqual(labels('fredericksburg, t', richmond), ['Fredericksburg, TX']);
+  assert.deepEqual(labels('fredericksburg va', null), ['Fredericksburg, VA']);
+  assert.deepEqual(labels('Fredericksburg, VA', null), ['Fredericksburg, VA']);
+});
+test('suggestCities understands abbreviations, limits, and empty input', () => {
+  assert.deepEqual(labels('st. lou', null), ['Saint Louis, MO']);
+  assert.equal(labels('fred', richmond, 2).length, 2);
+  assert.deepEqual(labels('', richmond), []);
+  assert.deepEqual(labels('   ', richmond), []);
+  assert.deepEqual(labels('zzz', richmond), []);
+});

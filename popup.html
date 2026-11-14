@@ -9,12 +9,16 @@
         --muted: #65676b;
         --line: #ced0d4;
         --error: #c0392b;
+        --surface: #fff;
+        --active: #e7f3ff;
       }
       @media (prefers-color-scheme: dark) {
         :root {
           --muted: #b0b3b8;
           --line: #3e4042;
           --error: #ff6b5e;
+          --surface: #242526;
+          --active: #263951;
         }
       }
       body {
@@ -51,6 +55,41 @@
         color: inherit;
         font: inherit;
         cursor: pointer;
+      }
+      .field {
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .field label {
+        margin-bottom: 0;
+      }
+      .field input[type='text'] {
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0;
+        cursor: text;
+      }
+      #suggestions {
+        position: absolute;
+        z-index: 1;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin: 2px 0 0;
+        padding: 4px;
+        list-style: none;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+      }
+      #suggestions li {
+        padding: 5px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #suggestions li[aria-selected='true'] {
+        background: var(--active);
       }
       #source {
         margin: -4px 0 10px;
@@ -89,10 +128,22 @@
 
     <label class="check"><input type="checkbox" id="enabled" /> Enabled</label>
 
-    <label>
-      <span>City</span>
-      <input type="text" id="city" placeholder="City, ST" autocomplete="off" />
-    </label>
+    <div class="field">
+      <label>
+        <span>City</span>
+        <input
+          type="text"
+          id="city"
+          placeholder="Start typing a city"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="suggestions"
+        />
+      </label>
+      <ul id="suggestions" role="listbox" hidden></ul>
+    </div>
 
     <label>
       <span>Radius (miles)</span>
