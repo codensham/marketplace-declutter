@@ -65,7 +65,10 @@
     const label = document.querySelector(G.FB_LOCATION_SELECTOR)?.getAttribute('aria-label');
     if (!label || label === fbLabel) return false;
     fbLabel = label;
-    active = G.effectiveSettings(settings, G.parseFacebookLocation(label), table);
+    const parsed = G.parseFacebookLocation(label);
+    active = G.effectiveSettings(settings, parsed, table);
+    // Shared with the popup so it can show the location Facebook is using.
+    chrome.storage.local.set({ fbLocation: parsed }).catch(() => {});
     return true;
   }
 

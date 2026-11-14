@@ -127,20 +127,35 @@ test('effectiveSettings falls back to the popup settings', () => {
   assert.deepEqual(G.effectiveSettings(S, unknown, table), { ...S, source: 'manual' });
 });
 
-test("popupLocation shows Facebook's location, locked, when the page is matching it", () => {
-  const page = { active: true, source: 'facebook', centerLabel: 'Springfield, IL', radiusMiles: 40 };
-  assert.deepEqual(G.popupLocation({ ...S, centerLabel: 'Austin, TX' }, page), {
+const FB = { city: 'Springfield', state: 'IL', radiusMiles: 40 };
+
+test("popupLocation defaults to Facebook's location", () => {
+  assert.deepEqual(G.popupLocation({ ...S, centerLabel: 'Austin, TX' }, FB), {
     city: 'Springfield, IL',
     radius: 40,
-    locked: true,
+    source: 'facebook',
   });
-  assert.equal(G.popupLocation(S, { ...page, radiusMiles: 62.1371 }).radius, 62);
+  assert.equal(G.popupLocation(S, { ...FB, radiusMiles: 62.1371 }).radius, 62);
 });
 
-test('popupLocation shows the saved settings, editable, otherwise', () => {
+test('popupLocation shows the saved location once it was changed by hand', () => {
+  const saved = { ...S, centerLabel: 'Austin, TX', radiusMiles: 25, manualOverride: true };
+  assert.deepEqual(G.popupLocation(saved, FB), { city: 'Austin, TX', radius: 25, source: 'manual' });
+});
+
+test("popupLocation shows the saved location when Facebook's is not known", () => {
   const saved = { ...S, centerLabel: 'Austin, TX', radiusMiles: 25 };
-  const editable = { city: 'Austin, TX', radius: 25, locked: false };
-  assert.deepEqual(G.popupLocation(saved, { active: true, source: 'manual' }), editable);
-  assert.deepEqual(G.popupLocation(saved, { active: false, source: 'facebook', centerLabel: 'X, VA', radiusMiles: 5 }), editable);
-  assert.deepEqual(G.popupLocation(saved, null), editable);
+  assert.deepEqual(G.popupLocation(saved, null), { city: 'Austin, TX', radius: 25, source: 'manual' });
+});
+
+test('effectiveSettings: a location changed by hand overrides Facebook', () => {
+  const fb = { city: 'Round Rock', state: 'TX', radiusMiles: 10 };
+  const manual = { ...S, manualOverride: true };
+  assert.deepEqual(G.effectiveSettings(manual, fb, table), { ...manual, source: 'manual' });
+  // An override with no usable city cannot filter, so Facebook still applies.
+  assert.equal(G.effectiveSettings({ ...manual, center: null }, fb, table).source, 'facebook');
+});
+
+test('manualOverride is off by default', () => {
+  assert.equal(G.DEFAULT_SETTINGS.manualOverride, false);
 });
