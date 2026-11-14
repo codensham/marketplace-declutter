@@ -28,7 +28,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["data/places.json"],
+      "resources": ["data/places.json", "data/aliases.json"],
       "matches": ["https://www.facebook.com/*"]
     }
   ]

@@ -34,12 +34,14 @@
   // cities, so it loads in the background and the popup shows straight away.
   let table = null;
   let cityIndex = [];
-  const tableReady = fetch(chrome.runtime.getURL('data/places.json'))
-    .then((r) => r.json())
-    .then((t) => {
-      table = t;
-      cityIndex = G.buildCityIndex(t);
-    });
+  const getJson = (path) => fetch(chrome.runtime.getURL(path)).then((r) => r.json());
+  const tableReady = Promise.all([
+    getJson('data/places.json'),
+    getJson('data/aliases.json').catch(() => ({})),
+  ]).then(([t, aliases]) => {
+    table = G.withAliases(t, aliases);
+    cityIndex = G.buildCityIndex(table);
+  });
 
   function showError(message) {
     status.textContent = message;

@@ -17,6 +17,7 @@ export const FILES = [
   'popup.js',
   'lib/geo.js',
   'data/places.json',
+  'data/aliases.json',
   ...readdirSync(join(root, 'icons'))
     .filter((f) => f.endsWith('.png'))
     .sort()

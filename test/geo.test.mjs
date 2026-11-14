@@ -242,3 +242,27 @@ test('shouldRejudge: new cards and unknown cards up to 3 tries', () => {
   assert.equal(G.shouldRejudge('unknown', 3), false);
   for (const v of ['keep', 'far', 'ship', 'ad']) assert.equal(G.shouldRejudge(v, 0), false);
 });
+
+test('nameVariants', () => {
+  assert.ok(G.nameVariants('N Chesterfield').includes('north chesterfield'));
+  assert.ok(G.nameVariants('Pt Pleasant').includes('point pleasant'));
+  assert.ok(G.nameVariants('The Bronx').includes('bronx'));
+  assert.ok(G.nameVariants('Winston Salem').includes('winston-salem'));
+  assert.ok(G.nameVariants('Port St. Lucie').includes('port saint lucie'));
+  assert.ok(G.nameVariants("Coeur d'Alene").includes('coeur dalene'));
+  assert.equal(G.nameVariants('Nashville')[0], 'nashville');
+  assert.ok(!G.nameVariants('Nashville').some((v) => v.startsWith('north')));
+  assert.ok(!G.nameVariants('St Albans').some((v) => v.includes('street')));
+});
+test('lookup falls back to variants and aliases', () => {
+  const t = G.withAliases({ 'winston-salem|NC': [36.1, -80.24], 'bronx|NY': [40.84, -73.87] },
+                          { 'north chesterfield|VA': [37.53, -77.52] });
+  assert.deepEqual(G.lookup(t, 'Winston Salem', 'NC'), [36.1, -80.24]);
+  assert.deepEqual(G.lookup(t, 'The Bronx', 'ny'), [40.84, -73.87]);
+  assert.deepEqual(G.lookup(t, 'N Chesterfield', 'VA'), [37.53, -77.52]);
+  assert.equal(G.lookup(t, 'Nowhere', 'VA'), null);
+});
+test('withAliases never overwrites the table', () => {
+  const t = G.withAliases({ 'a|VA': [1, 1] }, { 'a|VA': [2, 2] });
+  assert.deepEqual(t['a|VA'], [1, 1]);
+});

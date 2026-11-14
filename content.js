@@ -52,10 +52,10 @@
   function loadTable() {
     if (table || tableLoading) return;
     tableLoading = true;
-    fetch(chrome.runtime.getURL('data/places.json'))
-      .then((r) => r.json())
-      .then((t) => {
-        table = t;
+    const getJson = (path) => fetch(chrome.runtime.getURL(path)).then((r) => r.json());
+    Promise.all([getJson('data/places.json'), getJson('data/aliases.json').catch(() => ({}))])
+      .then(([t, aliases]) => {
+        table = G.withAliases(t, aliases);
         schedule();
       })
       .catch(() => {
