@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Marketplace Declutter",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Hides Facebook Marketplace listings that are outside your radius, shipping-only, or seller ads.",
   "icons": {
     "16": "icons/icon16.png",
@@ -23,7 +23,7 @@
     {
       "matches": ["https://www.facebook.com/*"],
       "js": ["lib/geo.js", "content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [

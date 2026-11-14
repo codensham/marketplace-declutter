@@ -213,3 +213,13 @@ test('suggestCities understands abbreviations, limits, and empty input', () => {
   assert.deepEqual(labels('   ', richmond), []);
   assert.deepEqual(labels('zzz', richmond), []);
 });
+
+test('sameFilter compares what decides a card', () => {
+  const a = { ...G.DEFAULT_SETTINGS, center: [37.5, -77.6], radiusMiles: 40, source: 'manual' };
+  assert.equal(G.sameFilter(a, { ...a, source: 'facebook', centerLabel: 'x' }), true);
+  assert.equal(G.sameFilter(a, { ...a, radiusMiles: 20 }), false);
+  assert.equal(G.sameFilter(a, { ...a, center: [30, -97] }), false);
+  assert.equal(G.sameFilter(a, { ...a, center: null }), false);
+  assert.equal(G.sameFilter(a, { ...a, hideAds: false }), false);
+  assert.equal(G.sameFilter(null, a), false);
+});

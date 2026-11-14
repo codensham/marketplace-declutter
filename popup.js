@@ -16,8 +16,16 @@
   let settings = { ...G.DEFAULT_SETTINGS, ...stored.settings };
   // Facebook's own location filter, as last read by the content script.
   let fbLocation = (await chrome.storage.local.get('fbLocation')).fbLocation ?? null;
-  const table = await fetch(chrome.runtime.getURL('data/places.json')).then((r) => r.json());
-  const cityIndex = G.buildCityIndex(table);
+  // The city table is only needed to check a typed city and to suggest
+  // cities, so it loads in the background and the popup shows straight away.
+  let table = null;
+  let cityIndex = [];
+  const tableReady = fetch(chrome.runtime.getURL('data/places.json'))
+    .then((r) => r.json())
+    .then((t) => {
+      table = t;
+      cityIndex = G.buildCityIndex(t);
+    });
 
   function showError(message) {
     status.textContent = message;
@@ -58,7 +66,8 @@
 
   // Editing either field switches to a manual location made of both fields
   // as currently shown, so changing only the radius keeps the shown city.
-  function saveManualLocation() {
+  async function saveManualLocation() {
+    await tableReady;
     const label = city.value.trim();
     const loc = G.parseLocationLine(label);
     const coords = loc && G.lookup(table, loc.city, loc.state);
@@ -91,6 +100,7 @@
   }
 
   function showSuggestions() {
+    if (!table) return tableReady.then(showSuggestions);
     const near = G.effectiveSettings(settings, fbLocation, table).center;
     matches = G.suggestCities(cityIndex, city.value, near);
     if (!matches.length) return closeSuggestions();
