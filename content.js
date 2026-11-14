@@ -5,7 +5,9 @@
 //  - a card's text lines are [optional "Just listed"], price, title, then
 //    "City, ST", "Ships to you", or "Ad from seller" (zero-width-space prefix);
 //  - a seller ad has two links to the same item (image and text) in one card;
-//  - the feed is many grid containers, one per loaded batch.
+//  - the feed is many grid containers, one per loaded batch;
+//  - the sidebar's location button has aria-label
+//    "Location: Springfield, Illinois, Within 40 mi", on browse and search pages.
 (() => {
   const G = globalThis.MLFGeo;
   const ITEM = 'a[href*="/marketplace/item/"]';
@@ -13,6 +15,8 @@
   const MAX_NUDGES = 5;
 
   let settings = { ...G.DEFAULT_SETTINGS };
+  let active = null; // settings in force: Facebook's location if readable, else the popup's
+  let fbLabel = null; // last aria-label read from Facebook's location filter
   let table = null;
   let tableLoading = false;
   let scheduled = false;
@@ -55,10 +59,22 @@
       });
   }
 
+  // Reads Marketplace's own location filter. Pages without the filter (a
+  // single listing, say) keep the last value read in this tab.
+  function syncFacebookLocation() {
+    const label = document.querySelector(G.FB_LOCATION_SELECTOR)?.getAttribute('aria-label');
+    if (!label || label === fbLabel) return false;
+    fbLabel = label;
+    active = G.effectiveSettings(settings, G.parseFacebookLocation(label), table);
+    return true;
+  }
+
   function pass() {
     scheduled = false;
     if (!settings.enabled || !onMarketplace()) return;
     if (!table) return loadTable();
+    if (!active) active = G.effectiveSettings(settings, G.parseFacebookLocation(fbLabel), table);
+    if (syncFacebookLocation()) return reset(); // location changed: re-judge every card
 
     let processed = 0;
     let hid = 0;
@@ -73,7 +89,7 @@
         anchor.removeAttribute('data-mlf-seen');
         continue;
       }
-      const verdict = G.decide(G.extractLocationLine(lines), settings, table);
+      const verdict = G.decide(G.extractLocationLine(lines), active, table);
       cell.setAttribute('data-mlf', verdict);
       processed++;
       if (HIDING.has(verdict)) {
@@ -124,6 +140,7 @@
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync' || !changes.settings) return;
     settings = { ...G.DEFAULT_SETTINGS, ...changes.settings.newValue };
+    active = null;
     reset();
   });
 
@@ -136,6 +153,9 @@
       far: count('far'),
       unknown: count('unknown'),
       active: onMarketplace(),
+      source: active?.source ?? 'manual',
+      centerLabel: active?.centerLabel ?? '',
+      radiusMiles: active?.radiusMiles ?? null,
     });
   });
 

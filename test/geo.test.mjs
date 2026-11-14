@@ -86,3 +86,43 @@ test('isCardSized rejects containers bigger than a listing card', () => {
   assert.equal(G.isCardSized(1100, 348), false); // a whole grid row
   assert.equal(G.isCardSized(269, 2400), false); // a single-column feed
 });
+
+test("parseFacebookLocation reads Marketplace's own location filter", () => {
+  assert.deepEqual(G.parseFacebookLocation('Location: Springfield, Illinois, Within 40 mi'), {
+    city: 'Springfield',
+    state: 'IL',
+    radiusMiles: 40,
+  });
+  assert.deepEqual(G.parseFacebookLocation('Location: Winston-Salem, North Carolina, Within 5 miles'), {
+    city: 'Winston-Salem',
+    state: 'NC',
+    radiusMiles: 5,
+  });
+  assert.equal(G.parseFacebookLocation('Location: Washington, District of Columbia, Within 100 mi').state, 'DC');
+  const km = G.parseFacebookLocation('Location: Austin, Texas, Within 100 km');
+  assert.ok(Math.abs(km.radiusMiles - 62.14) < 0.01, `got ${km.radiusMiles}`);
+});
+
+test('parseFacebookLocation returns null for anything it cannot read', () => {
+  assert.equal(G.parseFacebookLocation('Location: Toronto, Ontario, Within 40 mi'), null);
+  assert.equal(G.parseFacebookLocation('Location: Springfield, Illinois'), null);
+  assert.equal(G.parseFacebookLocation('Location'), null);
+  assert.equal(G.parseFacebookLocation(null), null);
+});
+
+test("effectiveSettings prefers Facebook's location over the popup's", () => {
+  const fb = { city: 'Round Rock', state: 'TX', radiusMiles: 10 };
+  assert.deepEqual(G.effectiveSettings(S, fb, table), {
+    ...S,
+    center: [30.508, -97.679],
+    radiusMiles: 10,
+    centerLabel: 'Round Rock, TX',
+    source: 'facebook',
+  });
+});
+
+test('effectiveSettings falls back to the popup settings', () => {
+  assert.deepEqual(G.effectiveSettings(S, null, table), { ...S, source: 'manual' });
+  const unknown = { city: 'Nowhere', state: 'TX', radiusMiles: 10 };
+  assert.deepEqual(G.effectiveSettings(S, unknown, table), { ...S, source: 'manual' });
+});

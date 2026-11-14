@@ -19,9 +19,12 @@
   hideShipping.checked = settings.hideShipping;
   hideAds.checked = settings.hideAds;
 
+  let facebookHint = ''; // set when the page is using Facebook's own location
+
   function showStatus(error) {
     status.className = error ? '' : 'hint';
-    status.textContent = error || (settings.center ? '' : 'Set your city to filter by distance');
+    status.textContent =
+      error || facebookHint || (settings.center ? '' : 'Set your city to filter by distance');
   }
 
   async function save(patch) {
@@ -57,10 +60,16 @@
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
+      facebookHint =
+        c.source === 'facebook'
+          ? `Matching Facebook: ${c.centerLabel} · ${Math.round(c.radiusMiles)} mi`
+          : '';
+      if (!status.textContent || status.className === 'hint') showStatus('');
       counts.textContent =
         `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · ` +
         `${c.unknown} unknown city`;
     } catch {
+      facebookHint = '';
       counts.textContent = 'Open Facebook Marketplace to see counts';
     }
   }

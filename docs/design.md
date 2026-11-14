@@ -22,7 +22,6 @@ hides both, so the grid shows only local listings within the chosen radius.
 
 - Countries other than the US.
 - Firefox / Safari / mobile.
-- Reading the location and radius from Facebook's own filter automatically.
 - Exact per-listing distance (accuracy is city-level).
 
 ## Anti-goals
@@ -73,6 +72,16 @@ test/geo.test.mjs        unit tests for lib/geo.js
 - Hide shipping-only: on by default.
 - Shows how many listings were hidden on the current page, split by reason,
   plus how many had an unrecognised city.
+
+### Location source (added after the MVP)
+
+The extension matches Facebook's own location filter whenever it can read it.
+The sidebar's location button carries an aria-label of the form
+"Location: Springfield, Illinois, Within 40 mi" on browse and search pages.
+If that parses and the city is in the table, its city and radius are used and
+the popup shows "Matching Facebook: …". Otherwise the popup's city and radius
+apply. Pages without the filter keep the last value read in that tab. The
+label is English-only and kilometres are converted to miles.
 
 ### Content script
 
