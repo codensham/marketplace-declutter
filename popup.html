@@ -10,7 +10,10 @@
         --line: #ced0d4;
         --error: #c0392b;
         --surface: #fff;
-        --active: #e7f3ff;
+        --active: #e1f5ee;
+        --brand: #0f6e56;
+        --on: #1d9e75;
+        --off: #b0b3b8;
       }
       @media (prefers-color-scheme: dark) {
         :root {
@@ -18,7 +21,9 @@
           --line: #3e4042;
           --error: #ff6b5e;
           --surface: #242526;
-          --active: #263951;
+          --active: #1d4a3f;
+          --brand: #5dcaa5;
+          --off: #5a5c5f;
         }
       }
       body {
@@ -27,47 +32,77 @@
         padding: 14px;
         font: 13px/1.4 system-ui, sans-serif;
       }
-      h1 {
-        margin: 0 0 12px;
-        font-size: 14px;
-      }
-      label {
-        display: block;
-        margin-bottom: 10px;
-      }
-      label.check {
+      header {
         display: flex;
         align-items: center;
         gap: 8px;
+        margin-bottom: 14px;
       }
-      label span {
-        display: block;
-        margin-bottom: 3px;
-        color: var(--muted);
+      header img {
+        width: 20px;
+        height: 20px;
       }
-      input[type='text'],
-      button {
-        margin: 0 0 12px;
-        padding: 5px 10px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: transparent;
-        color: inherit;
-        font: inherit;
+      h1 {
+        flex: 1;
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      /* The on/off switch is a checkbox, so popup.js reads it as before. */
+      .switch {
+        appearance: none;
+        position: relative;
+        flex: none;
+        width: 32px;
+        height: 18px;
+        margin: 0;
+        border-radius: 9px;
+        background: var(--off);
         cursor: pointer;
+        transition: background 0.15s;
+      }
+      .switch::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.15s;
+      }
+      .switch:checked {
+        background: var(--on);
+      }
+      .switch:checked::after {
+        transform: translateX(14px);
       }
       .field {
         position: relative;
         margin-bottom: 10px;
       }
       .field label {
-        margin-bottom: 0;
+        display: block;
       }
-      .field input[type='text'] {
+      .field span {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--muted);
+      }
+      .field input {
         box-sizing: border-box;
         width: 100%;
-        margin: 0;
-        cursor: text;
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+      :focus-visible {
+        outline: 2px solid var(--on);
+        outline-offset: 1px;
       }
       #suggestions {
         position: absolute;
@@ -91,29 +126,55 @@
       #suggestions li[aria-selected='true'] {
         background: var(--active);
       }
-      #source {
-        margin: -4px 0 10px;
+      .source {
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
         color: var(--muted);
       }
-      input[type='number'] {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 6px 8px;
+      .source svg {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        margin-top: 2px;
+        color: var(--brand);
+      }
+      button {
+        margin-top: 8px;
+        padding: 5px 10px;
         border: 1px solid var(--line);
         border-radius: 6px;
+        background: transparent;
+        color: inherit;
         font: inherit;
+        cursor: pointer;
       }
       #status {
-        min-height: 18px;
+        margin-top: 8px;
         color: var(--error);
       }
-      #status.hint {
-        color: var(--muted);
+      #status:empty {
+        display: none;
+      }
+      hr {
+        margin: 12px 0;
+        border: 0;
+        border-top: 1px solid var(--line);
+      }
+      label.check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 3px 0;
+        cursor: pointer;
+      }
+      label.check input {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        accent-color: var(--on);
       }
       #counts {
-        margin-top: 8px;
-        padding-top: 8px;
-        border-top: 1px solid var(--line);
         color: var(--muted);
       }
       footer {
@@ -124,9 +185,11 @@
     </style>
   </head>
   <body>
-    <h1>Marketplace Declutter</h1>
-
-    <label class="check"><input type="checkbox" id="enabled" /> Enabled</label>
+    <header>
+      <img src="icons/icon48.png" alt="" />
+      <h1>Marketplace Declutter</h1>
+      <input type="checkbox" id="enabled" class="switch" role="switch" aria-label="Enabled" />
+    </header>
 
     <div class="field">
       <label>
@@ -145,18 +208,30 @@
       <ul id="suggestions" role="listbox" hidden></ul>
     </div>
 
-    <label>
-      <span>Radius (miles)</span>
-      <input type="number" id="radius" min="1" max="500" step="1" />
-    </label>
+    <div class="field">
+      <label>
+        <span>Radius (miles)</span>
+        <input type="number" id="radius" min="1" max="500" step="1" />
+      </label>
+    </div>
 
-    <div id="source"></div>
+    <div class="source">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" stroke-linejoin="round" />
+        <circle cx="12" cy="10" r="2.5" />
+      </svg>
+      <span id="source"></span>
+    </div>
     <button type="button" id="useFacebook" hidden>Use Facebook's location</button>
+    <div id="status" role="status"></div>
+
+    <hr />
 
     <label class="check"><input type="checkbox" id="hideShipping" /> Hide shipping-only</label>
     <label class="check"><input type="checkbox" id="hideAds" /> Hide ads from sellers</label>
 
-    <div id="status" role="status"></div>
+    <hr />
+
     <div id="counts"></div>
 
     <footer>City data: GeoNames (CC BY 4.0) and US Census Bureau.</footer>
