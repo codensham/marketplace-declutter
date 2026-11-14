@@ -11,6 +11,7 @@ hides both, so the grid shows only local listings within the chosen radius.
 ## Goals
 
 - Hide listings that are shipping-only.
+- Hide "Ad from seller" cards (added during the build at the user's request).
 - Hide listings whose city is farther than the user's radius from their centre.
 - Stay very lightweight: no background worker, no network calls, no vendor,
   no framework, no build step for the extension itself.
@@ -99,6 +100,8 @@ cannot loop when the feed is genuinely exhausted.
 
 ### Rules, in order
 
+0. Location line is "Ad from seller" → hide as an ad (setting, on by
+   default).
 1. Location line is a shipping marker (e.g. "Ships to you") → hide as
    shipping-only.
 2. Location line parses as "City, ST" and is found in the table → hide if
@@ -109,8 +112,18 @@ A listing in range that also offers shipping stays visible.
 
 ### City table
 
-- Source: US Census Bureau Gazetteer files (public domain): Places, plus
-  County Subdivisions so townships resolve in the states that use them.
+- **Revised during the build.** A live sample of 178 cards showed Facebook
+  labels listings with postal city names ("Henrico, VA", "Kents Store, VA").
+  Census alone matched 24 of 37 names; USGS GNIS matched all but mislocated
+  ambiguous names (Henrico was 92 miles off). Postal names matched 37 of 37
+  with plausible distances.
+- Primary source: GeoNames US postal-code file (CC BY 4.0, attribution in the
+  popup and `NOTICE.md`). A city's point is the mean of its ZIP centroids.
+- Fallback source: US Census Bureau Gazetteer files (public domain): Places,
+  plus County Subdivisions, for names that are not postal cities. Legal names
+  get everyday aliases ("Nashville-Davidson metropolitan government" →
+  "Nashville").
+- Result: about 50,600 names, 1.6 MB.
 - `scripts/build-places.mjs` converts them to
   `{ "city|ST": [lat, lon] }`, lower-cased names, coordinates rounded to
   three decimals. Committed output; regenerate only when Census updates.

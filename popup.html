@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Marketplace Local Filter</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --muted: #65676b;
+        --line: #ced0d4;
+        --error: #c0392b;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --muted: #b0b3b8;
+          --line: #3e4042;
+          --error: #ff6b5e;
+        }
+      }
+      body {
+        width: 280px;
+        margin: 0;
+        padding: 14px;
+        font: 13px/1.4 system-ui, sans-serif;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+      label {
+        display: block;
+        margin-bottom: 10px;
+      }
+      label.check {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      label span {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--muted);
+      }
+      input[type='text'],
+      input[type='number'] {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 6px 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font: inherit;
+      }
+      #status {
+        min-height: 18px;
+        color: var(--error);
+      }
+      #status.hint {
+        color: var(--muted);
+      }
+      #counts {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+      }
+      footer {
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Marketplace Local Filter</h1>
+
+    <label class="check"><input type="checkbox" id="enabled" /> Enabled</label>
+
+    <label>
+      <span>Your city</span>
+      <input type="text" id="city" placeholder="Austin, TX" autocomplete="off" />
+    </label>
+
+    <label>
+      <span>Radius (miles)</span>
+      <input type="number" id="radius" min="1" max="500" step="1" />
+    </label>
+
+    <label class="check"><input type="checkbox" id="hideShipping" /> Hide shipping-only</label>
+    <label class="check"><input type="checkbox" id="hideAds" /> Hide ads from sellers</label>
+
+    <div id="status" role="status"></div>
+    <div id="counts"></div>
+
+    <footer>City data: GeoNames (CC BY 4.0) and US Census Bureau.</footer>
+
+    <script src="lib/geo.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
