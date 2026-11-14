@@ -25,15 +25,18 @@
   const onMarketplace = () => location.pathname.startsWith('/marketplace');
   const itemId = (a) => /\/marketplace\/item\/(\d+)/.exec(a.getAttribute('href') || '')?.[1];
 
-  // The card's cell is the largest ancestor whose item links all point to
-  // this one listing.
+  // The card's cell is the largest card-sized ancestor whose item links all
+  // point to this one listing. The size limit matters when a page shows a
+  // single listing: without it the walk would climb to the whole page.
   function cellOf(anchor) {
     const id = itemId(anchor);
     let node = anchor;
     while (node.parentElement && node.parentElement !== document.body) {
-      const links = node.parentElement.querySelectorAll(ITEM);
-      if ([...links].some((l) => itemId(l) !== id)) break;
-      node = node.parentElement;
+      const parent = node.parentElement;
+      if ([...parent.querySelectorAll(ITEM)].some((l) => itemId(l) !== id)) break;
+      const box = parent.getBoundingClientRect();
+      if (!G.isCardSized(box.width, box.height)) break;
+      node = parent;
     }
     return node;
   }

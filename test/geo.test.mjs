@@ -79,3 +79,10 @@ test('card lines are trimmed of invisible characters', () => {
     'Kents Store, VA',
   ]);
 });
+
+test('isCardSized rejects containers bigger than a listing card', () => {
+  assert.equal(G.isCardSized(269, 348), true); // desktop grid cell
+  assert.equal(G.isCardSized(253, 79), true); // text half of a seller ad
+  assert.equal(G.isCardSized(1100, 348), false); // a whole grid row
+  assert.equal(G.isCardSized(269, 2400), false); // a single-column feed
+});
