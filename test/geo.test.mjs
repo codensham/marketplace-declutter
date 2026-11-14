@@ -266,3 +266,26 @@ test('withAliases never overwrites the table', () => {
   const t = G.withAliases({ 'a|VA': [1, 1] }, { 'a|VA': [2, 2] });
   assert.deepEqual(t['a|VA'], [1, 1]);
 });
+
+const sb = G.buildStateBounds({
+  'richmond|VA': [37.54, -77.44], 'bristol|VA': [36.6, -82.19], 'norfolk|VA': [36.85, -76.29],
+  'raleigh|NC': [35.78, -78.64], 'durham|NC': [35.99, -78.9],
+  'los angeles|CA': [34.05, -118.24], 'eureka|CA': [40.8, -124.16],
+  'anchorage|AK': [61.2, -149.9],
+});
+const mid = { ...G.DEFAULT_SETTINGS, center: [37.5, -77.65], radiusMiles: 40 };
+test('milesToState', () => {
+  assert.equal(G.milesToState(sb, 'VA', mid.center), 0);
+  assert.ok(G.milesToState(sb, 'CA', mid.center) > 2000);
+  assert.equal(G.milesToState(sb, 'ON', mid.center), null);
+  assert.equal(G.milesToState(sb, 'AK', mid.center), null);
+});
+test('decide: unknown city, far state → far; near or unbounded → unknown', () => {
+  assert.equal(G.decide('Hollywoodish, CA', mid, {}, sb), 'far');
+  assert.equal(G.decide('Unknownville, NC', { ...mid, radiusMiles: 300 }, {}, sb), 'unknown');
+  assert.equal(G.decide('Unknownville, VA', mid, {}, sb), 'unknown');
+  assert.equal(G.decide('Toronto, ON', mid, {}, sb), 'unknown');
+  assert.equal(G.decide('Nome, AK', mid, {}, sb), 'unknown');
+  assert.equal(G.decide('Hollywoodish, CA', { ...mid, center: null }, {}, sb), 'unknown');
+  assert.equal(G.decide('Hollywoodish, CA', mid, {}), 'unknown'); // no bounds given
+});

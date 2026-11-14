@@ -22,6 +22,7 @@
   let fbCached = null;
   let ready = false; // settings and cached location loaded
   let table = null;
+  let stateBounds = null;
   let tableLoading = false;
   let scheduled = false;
   let nudges = 0;
@@ -56,6 +57,7 @@
     Promise.all([getJson('data/places.json'), getJson('data/aliases.json').catch(() => ({}))])
       .then(([t, aliases]) => {
         table = G.withAliases(t, aliases);
+        stateBounds = G.buildStateBounds(table);
         schedule();
       })
       .catch(() => {
@@ -117,7 +119,7 @@
       const lines = G.cardLines(cell.innerText);
       if (!lines.length) continue; // text not rendered yet; look again on the next pass
       const loc = G.extractLocationLine(lines);
-      const verdict = G.decide(loc, active, table);
+      const verdict = G.decide(loc, active, table, stateBounds);
       judged.set(cell, { verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
     }
 
