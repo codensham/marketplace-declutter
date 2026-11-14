@@ -1,3 +1,25 @@
-scripts/raw/
+# Dependencies and downloaded source data
 node_modules/
+scripts/raw/
+
+# AI assistant and agent tooling
+.claude/
 .superpowers/
+CLAUDE.local.md
+.cursor/
+.aider*
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Packaged builds, logs, local env
+*.zip
+*.crx
+*.pem
+*.log
+.env
+.env.*
