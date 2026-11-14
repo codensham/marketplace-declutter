@@ -126,3 +126,21 @@ test('effectiveSettings falls back to the popup settings', () => {
   const unknown = { city: 'Nowhere', state: 'TX', radiusMiles: 10 };
   assert.deepEqual(G.effectiveSettings(S, unknown, table), { ...S, source: 'manual' });
 });
+
+test("popupLocation shows Facebook's location, locked, when the page is matching it", () => {
+  const page = { active: true, source: 'facebook', centerLabel: 'Springfield, IL', radiusMiles: 40 };
+  assert.deepEqual(G.popupLocation({ ...S, centerLabel: 'Austin, TX' }, page), {
+    city: 'Springfield, IL',
+    radius: 40,
+    locked: true,
+  });
+  assert.equal(G.popupLocation(S, { ...page, radiusMiles: 62.1371 }).radius, 62);
+});
+
+test('popupLocation shows the saved settings, editable, otherwise', () => {
+  const saved = { ...S, centerLabel: 'Austin, TX', radiusMiles: 25 };
+  const editable = { city: 'Austin, TX', radius: 25, locked: false };
+  assert.deepEqual(G.popupLocation(saved, { active: true, source: 'manual' }), editable);
+  assert.deepEqual(G.popupLocation(saved, { active: false, source: 'facebook', centerLabel: 'X, VA', radiusMiles: 5 }), editable);
+  assert.deepEqual(G.popupLocation(saved, null), editable);
+});

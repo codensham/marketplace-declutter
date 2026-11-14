@@ -14,12 +14,20 @@
   const table = await fetch(chrome.runtime.getURL('data/places.json')).then((r) => r.json());
 
   enabled.checked = settings.enabled;
-  city.value = settings.centerLabel;
-  radius.value = settings.radiusMiles;
   hideShipping.checked = settings.hideShipping;
   hideAds.checked = settings.hideAds;
 
   let facebookHint = ''; // set when the page is using Facebook's own location
+
+  // Fills the city and radius fields: Facebook's location (read-only) while
+  // the page is matching it, otherwise the saved settings.
+  function showLocation(page) {
+    const shown = G.popupLocation(settings, page);
+    city.value = shown.city;
+    radius.value = shown.radius;
+    city.disabled = radius.disabled = shown.locked;
+    facebookHint = shown.locked ? "Using the location set in Facebook's filter" : '';
+  }
 
   function showStatus(error) {
     status.className = error ? '' : 'hint';
@@ -60,20 +68,19 @@
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
-      facebookHint =
-        c.source === 'facebook'
-          ? `Matching Facebook: ${c.centerLabel} · ${Math.round(c.radiusMiles)} mi`
-          : '';
+      showLocation(c);
       if (!status.textContent || status.className === 'hint') showStatus('');
       counts.textContent =
         `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · ` +
         `${c.unknown} unknown city`;
     } catch {
-      facebookHint = '';
+      showLocation(null);
+      if (status.className === 'hint') showStatus('');
       counts.textContent = 'Open Facebook Marketplace to see counts';
     }
   }
 
+  showLocation(null);
   showStatus('');
   refreshCounts();
 })();
