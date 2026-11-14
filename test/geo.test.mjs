@@ -223,3 +223,13 @@ test('sameFilter compares what decides a card', () => {
   assert.equal(G.sameFilter(a, { ...a, hideAds: false }), false);
   assert.equal(G.sameFilter(null, a), false);
 });
+
+test('unknownSamples: distinct, capped at 20, empty named', () => {
+  assert.deepEqual(G.unknownSamples(['Hollywood, CA', '', 'Hollywood, CA']), [
+    'Hollywood, CA',
+    '(no location line)',
+  ]);
+  const many = Array.from({ length: 30 }, (_, i) => `Town${i}, ZZ`);
+  assert.equal(G.unknownSamples(many).length, 20);
+  assert.deepEqual(G.unknownSamples([]), []);
+});

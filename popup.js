@@ -11,6 +11,20 @@
   const source = $('source');
   const status = $('status');
   const counts = $('counts');
+  const unknownBox = $('unknownBox');
+  const unknownList = $('unknownList');
+  const copyUnknown = $('copyUnknown');
+  let unknownSamples = [];
+
+  copyUnknown.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(unknownSamples.join('\n'));
+      copyUnknown.textContent = 'Copied';
+    } catch {
+      copyUnknown.textContent = 'Copy failed';
+    }
+    setTimeout(() => (copyUnknown.textContent = 'Copy'), 1500);
+  });
 
   const stored = await chrome.storage.sync.get('settings');
   let settings = { ...G.DEFAULT_SETTINGS, ...stored.settings };
@@ -161,10 +175,34 @@
       [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
-      counts.textContent =
-        `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · ` +
-        `${c.unknown} unknown city`;
+      counts.textContent = `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · `;
+      const unknownText = `${c.unknown} unknown city`;
+      unknownSamples = c.unknownSamples ?? [];
+      if (c.unknown > 0 && unknownSamples.length) {
+        // The phrase opens a list of the location lines that were not recognised.
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'link';
+        toggle.textContent = unknownText;
+        toggle.setAttribute('aria-expanded', String(!unknownBox.hidden));
+        toggle.addEventListener('click', () => {
+          unknownBox.hidden = !unknownBox.hidden;
+          toggle.setAttribute('aria-expanded', String(!unknownBox.hidden));
+        });
+        counts.append(toggle);
+        unknownList.replaceChildren(
+          ...unknownSamples.map((line) => {
+            const li = document.createElement('li');
+            li.textContent = line;
+            return li;
+          }),
+        );
+      } else {
+        counts.append(unknownText);
+        unknownBox.hidden = true;
+      }
     } catch {
+      unknownBox.hidden = true;
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.
       const url = tab?.url ?? '';

@@ -177,6 +177,26 @@
       #counts {
         color: var(--muted);
       }
+      .link {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        color: inherit;
+        text-decoration: underline dotted;
+      }
+      #unknownBox {
+        margin-top: 6px;
+        color: var(--muted);
+      }
+      #unknownList {
+        max-height: 120px;
+        overflow-y: auto;
+        margin: 0 0 6px;
+        padding-left: 18px;
+      }
+      #copyUnknown {
+        margin-top: 0;
+      }
       footer {
         margin-top: 10px;
         font-size: 11px;
@@ -233,6 +253,10 @@
     <hr />
 
     <div id="counts"></div>
+    <div id="unknownBox" hidden>
+      <ul id="unknownList"></ul>
+      <button type="button" id="copyUnknown">Copy</button>
+    </div>
 
     <footer>City data: GeoNames (CC BY 4.0) and US Census Bureau.</footer>
 

@@ -94,7 +94,7 @@
     // Read everything first, then write. Hiding a card between reads would
     // make the browser redo layout for every card measured after it.
     const seen = [];
-    const judged = new Map(); // cell -> verdict
+    const judged = new Map(); // cell -> { verdict, loc }
     for (const anchor of document.querySelectorAll(`${ITEM}:not([data-mlf-seen])`)) {
       if (!itemId(anchor)) {
         seen.push(anchor);
@@ -104,15 +104,17 @@
       if (!cell.hasAttribute('data-mlf') && !judged.has(cell)) {
         const lines = G.cardLines(cell.innerText);
         if (!lines.length) continue; // text not rendered yet; look again on the next pass
-        judged.set(cell, G.decide(G.extractLocationLine(lines), active, table));
+        const loc = G.extractLocationLine(lines);
+        judged.set(cell, { verdict: G.decide(loc, active, table), loc: loc ?? '' });
       }
       seen.push(anchor);
     }
 
     for (const anchor of seen) anchor.setAttribute('data-mlf-seen', '');
     let hid = 0;
-    for (const [cell, verdict] of judged) {
+    for (const [cell, { verdict, loc }] of judged) {
       cell.setAttribute('data-mlf', verdict);
+      cell.setAttribute('data-mlf-loc', loc);
       if (HIDING.has(verdict)) {
         cell.setAttribute('data-mlf-hidden', verdict);
         hid++;
@@ -150,6 +152,7 @@
   function reset() {
     for (const el of document.querySelectorAll('[data-mlf], [data-mlf-hidden], [data-mlf-seen]')) {
       el.removeAttribute('data-mlf');
+      el.removeAttribute('data-mlf-loc');
       el.removeAttribute('data-mlf-hidden');
       el.removeAttribute('data-mlf-seen');
     }
@@ -185,6 +188,9 @@
       ship: count('ship'),
       far: count('far'),
       unknown: count('unknown'),
+      unknownSamples: G.unknownSamples(
+        [...document.querySelectorAll('[data-mlf="unknown"]')].map((c) => c.getAttribute('data-mlf-loc')),
+      ),
       active: onMarketplace(),
       source: active?.source ?? 'manual',
       centerLabel: active?.centerLabel ?? '',
