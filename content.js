@@ -12,6 +12,7 @@
   const G = globalThis.MLFGeo;
   const ITEM = 'a[href*="/marketplace/item/"]';
   const MAX_NUDGES = 5;
+  const RECHECK_MS = 400; // gap between re-checks of an unknown card
 
   let settings = { ...G.DEFAULT_SETTINGS };
   let active = null; // settings in force: Facebook's location if readable, else the popup's
@@ -125,6 +126,7 @@
     for (const anchor of seen) anchor.setAttribute('data-mlf-seen', '');
     let hid = 0;
     let fresh = 0;
+    let pending = 0; // unknown cards with re-checks left
     for (const [cell, { verdict, loc, tries, isNew, anchors }] of judged) {
       cell.setAttribute('data-mlf', verdict);
       cell.setAttribute('data-mlf-loc', loc);
@@ -133,6 +135,7 @@
       if (verdict === 'unknown') {
         cell.setAttribute('data-mlf-tries', String(tries + 1));
         final = tries + 1 >= G.MAX_UNKNOWN_TRIES;
+        if (!final) pending++;
       } else {
         cell.removeAttribute('data-mlf-tries');
       }
@@ -147,6 +150,9 @@
 
     if (fresh) nudges = 0;
     if (hid) nudgeIfShort();
+    // A quiet page triggers no further passes, so come back for the
+    // remaining re-checks rather than waiting for the next page change.
+    if (pending) setTimeout(schedule, RECHECK_MS);
   }
 
   // Hiding cards can leave the page too short to trigger Facebook's next
