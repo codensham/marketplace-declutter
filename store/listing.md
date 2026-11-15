@@ -23,7 +23,7 @@ WHAT IT HIDES
 • Listings whose city can't be placed – only if you turn this on
 
 NO SETUP NEEDED
-The extension uses the location and radius you already set in Marketplace's own location filter. Want a different area? Open the popup and start typing a city: matching US cities appear as you type, nearest first.
+The extension uses the location and radius you already set in Marketplace's own location filter. Because Facebook's location isn't exact, towns up to 15 miles past your radius are kept by default; you can turn that off in the popup.
 
 SEE WHAT WAS HIDDEN
 The popup shows how many listings were hidden on the current page and why. Listings with a city the extension doesn't recognise are always left visible.
@@ -69,7 +69,7 @@ Hides Facebook Marketplace listings that are outside the user's chosen radius, s
 
 | Permission | Justification |
 | --- | --- |
-| `storage` | Saves the user's settings (on/off, city, radius, which listing types to hide) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
+| `storage` | Saves the user's settings (on/off, the 15-mile grace margin, which listing types to hide) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
 | `activeTab` | When the user opens the popup, reads the current tab's address to tell them whether they are on Marketplace and whether the tab needs refreshing before filtering can start. |
 | Host permission (`https://www.facebook.com/*`, via content script) | The content script runs on Facebook Marketplace pages to read each listing card's location line and Marketplace's location filter, and to hide listings that are out of range, shipping-only, or seller ads. It does nothing on other Facebook pages. |
 

@@ -67,8 +67,7 @@ test/geo.test.mjs        unit tests for lib/geo.js
 ### Settings (popup, saved in `chrome.storage.sync`)
 
 - Enabled on/off.
-- Centre: typed as "City, ST", validated against the table.
-- Radius in miles.
+- Grace: on by default; keeps cities up to 15 miles past the radius.
 - Hide shipping-only: on by default.
 - Shows how many listings were hidden on the current page, split by reason,
   plus how many had an unrecognised city.
@@ -78,9 +77,9 @@ test/geo.test.mjs        unit tests for lib/geo.js
 The extension matches Facebook's own location filter whenever it can read it.
 The sidebar's location button carries an aria-label of the form
 "Location: Springfield, Illinois, Within 40 mi" on browse and search pages.
-If that parses and the city is in the table, its city and radius are used and
-the popup shows "Matching Facebook: …". Otherwise the popup's city and radius
-apply. Pages without the filter keep the last value read in that tab. The
+If that parses and the city is in the table, its city and radius are used.
+Otherwise no listing is hidden as out of range. (The popup's own city and
+radius fields were later removed: Facebook's filter is always the area.) Pages without the filter keep the last value read in that tab. The
 label is English-only and kilometres are converted to miles.
 
 ### Content script
@@ -152,8 +151,6 @@ A listing in range that also offers shipping stays visible.
 - `scripts/manual-aliases.json` adds names GeoNames lacks ("SoMa", "Bed-Stuy")
   and removes ones where a famous neighborhood shares its name with a smaller
   GeoNames place ("Wynwood, FL", "Lakeview, IL").
-- City suggestions in the popup use the city table only, so hamlets don't
-  crowd out towns; a typed alias is still accepted.
 
 ### Testing
 
@@ -167,8 +164,8 @@ A listing in range that also offers shipping stays visible.
 
 - Centre and radius are typed into the popup, not read from Facebook.
 - Unknown cities stay visible rather than hidden.
-- Radius is applied as entered, with no extra tolerance, measured to the
-  city's centre point.
+- Radius is measured to the city's centre point, plus a 15-mile grace
+  margin (on by default) because Facebook's location is approximate.
 - Hidden cards are removed from the layout, not dimmed.
 - Chrome/Edge only.
 

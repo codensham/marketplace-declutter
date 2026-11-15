@@ -110,7 +110,7 @@ test('parseFacebookLocation returns null for anything it cannot read', () => {
   assert.equal(G.parseFacebookLocation(null), null);
 });
 
-test("effectiveSettings prefers Facebook's location over the popup's", () => {
+test("effectiveSettings uses Facebook's location", () => {
   const fb = { city: 'Round Rock', state: 'TX', radiusMiles: 10 };
   assert.deepEqual(G.effectiveSettings(S, fb, table), {
     ...S,
@@ -121,97 +121,34 @@ test("effectiveSettings prefers Facebook's location over the popup's", () => {
   });
 });
 
-test('effectiveSettings falls back to the popup settings', () => {
-  assert.deepEqual(G.effectiveSettings(S, null, table), { ...S, source: 'manual' });
+test("effectiveSettings has no centre until Facebook's location is known", () => {
+  const none = { ...S, center: null, radiusMiles: null, centerLabel: '', source: 'none' };
+  assert.deepEqual(G.effectiveSettings(S, null, table), none);
   const unknown = { city: 'Nowhere', state: 'TX', radiusMiles: 10 };
-  assert.deepEqual(G.effectiveSettings(S, unknown, table), { ...S, source: 'manual' });
+  assert.deepEqual(G.effectiveSettings(S, unknown, table), none);
 });
 
-const FB = { city: 'Springfield', state: 'IL', radiusMiles: 40 };
-
-test("popupLocation defaults to Facebook's location", () => {
-  assert.deepEqual(G.popupLocation({ ...S, centerLabel: 'Austin, TX' }, FB), {
-    city: 'Springfield, IL',
-    radius: 40,
-    source: 'facebook',
-  });
-  assert.equal(G.popupLocation(S, { ...FB, radiusMiles: 62.1371 }).radius, 62);
-});
-
-test('popupLocation shows the saved location once it was changed by hand', () => {
-  const saved = { ...S, centerLabel: 'Austin, TX', radiusMiles: 25, manualOverride: true };
-  assert.deepEqual(G.popupLocation(saved, FB), { city: 'Austin, TX', radius: 25, source: 'manual' });
-});
-
-test("popupLocation shows the saved location when Facebook's is not known", () => {
-  const saved = { ...S, centerLabel: 'Austin, TX', radiusMiles: 25 };
-  assert.deepEqual(G.popupLocation(saved, null), { city: 'Austin, TX', radius: 25, source: 'manual' });
-});
-
-test('effectiveSettings: a location changed by hand overrides Facebook', () => {
+test('effectiveSettings ignores a city saved by an older version', () => {
+  const old = { ...S, manualOverride: true, centerLabel: 'Austin, TX' };
+  assert.equal(G.effectiveSettings(old, null, table).center, null);
   const fb = { city: 'Round Rock', state: 'TX', radiusMiles: 10 };
-  const manual = { ...S, manualOverride: true };
-  assert.deepEqual(G.effectiveSettings(manual, fb, table), { ...manual, source: 'manual' });
-  // An override with no usable city cannot filter, so Facebook still applies.
-  assert.equal(G.effectiveSettings({ ...manual, center: null }, fb, table).source, 'facebook');
+  assert.equal(G.effectiveSettings(old, fb, table).source, 'facebook');
 });
 
-test('manualOverride is off by default', () => {
-  assert.equal(G.DEFAULT_SETTINGS.manualOverride, false);
+test('grace is on by default and adds GRACE_MILES to the radius', () => {
+  assert.equal(G.DEFAULT_SETTINGS.grace, true);
+  assert.equal(G.GRACE_MILES, 15);
+  assert.equal(G.limitMiles({ radiusMiles: 40, grace: true }), 55);
+  assert.equal(G.limitMiles({ radiusMiles: 40, grace: false }), 40);
 });
 
-const cityTable = {
-  'fredericksburg|VA': [38.303, -77.461],
-  'fredericksburg|TX': [30.275, -98.872],
-  'frederick|MD': [39.414, -77.411],
-  'fredonia|NY': [42.44, -79.332],
-  'saint louis|MO': [38.627, -90.198],
-  'winston-salem|NC': [36.1, -80.244],
-};
-const cityIndex = G.buildCityIndex(cityTable);
-const richmond = [37.541, -77.436];
-const labels = (q, near, limit) => G.suggestCities(cityIndex, q, near, limit).map((c) => c.label);
-
-test('buildCityIndex makes display labels', () => {
-  const all = cityIndex.map((c) => c.label);
-  assert.ok(all.includes('Fredericksburg, VA'));
-  assert.ok(all.includes('Saint Louis, MO'));
-  assert.ok(all.includes('Winston-Salem, NC'));
-});
-test('suggestCities matches the start of the city name, nearest first', () => {
-  assert.deepEqual(labels('fred', richmond), [
-    'Fredericksburg, VA',
-    'Frederick, MD',
-    'Fredonia, NY',
-    'Fredericksburg, TX',
-  ]);
-  assert.deepEqual(labels('FRED', [30.267, -97.743])[0], 'Fredericksburg, TX');
-});
-test('suggestCities ranks a nearby longer name above a far exact one', () => {
-  const index = G.buildCityIndex({ ...cityTable, 'fred|TX': [30.575, -94.176] });
-  const got = G.suggestCities(index, 'fred', richmond).map((c) => c.label);
-  assert.equal(got[0], 'Fredericksburg, VA');
-  assert.equal(got.at(-1), 'Fredericksburg, TX');
-});
-test('suggestCities sorts by name when there is no centre', () => {
-  assert.deepEqual(labels('fred', null), [
-    'Frederick, MD',
-    'Fredericksburg, TX',
-    'Fredericksburg, VA',
-    'Fredonia, NY',
-  ]);
-});
-test('suggestCities narrows by a typed state', () => {
-  assert.deepEqual(labels('fredericksburg, t', richmond), ['Fredericksburg, TX']);
-  assert.deepEqual(labels('fredericksburg va', null), ['Fredericksburg, VA']);
-  assert.deepEqual(labels('Fredericksburg, VA', null), ['Fredericksburg, VA']);
-});
-test('suggestCities understands abbreviations, limits, and empty input', () => {
-  assert.deepEqual(labels('st. lou', null), ['Saint Louis, MO']);
-  assert.equal(labels('fred', richmond, 2).length, 2);
-  assert.deepEqual(labels('', richmond), []);
-  assert.deepEqual(labels('   ', richmond), []);
-  assert.deepEqual(labels('zzz', richmond), []);
+test('decide keeps a city inside the grace margin and hides one past it', () => {
+  // Round Rock is ~17 mi from Austin.
+  const near = { ...S, radiusMiles: 10 };
+  assert.equal(G.decide('Round Rock, TX', { ...near, grace: true }, table), 'keep');
+  assert.equal(G.decide('Round Rock, TX', { ...near, grace: false }, table), 'far');
+  // Dallas is ~180 mi away: hidden either way.
+  assert.equal(G.decide('Dallas, TX', { ...near, grace: true }, table), 'far');
 });
 
 test('sameFilter compares what decides a card', () => {
@@ -221,6 +158,7 @@ test('sameFilter compares what decides a card', () => {
   assert.equal(G.sameFilter(a, { ...a, center: [30, -97] }), false);
   assert.equal(G.sameFilter(a, { ...a, center: null }), false);
   assert.equal(G.sameFilter(a, { ...a, hideAds: false }), false);
+  assert.equal(G.sameFilter(a, { ...a, grace: !a.grace }), false);
   assert.equal(G.sameFilter(null, a), false);
 });
 

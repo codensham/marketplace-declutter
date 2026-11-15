@@ -264,7 +264,7 @@
           )
         : [],
       active: onMarketplace(),
-      source: active?.source ?? 'manual',
+      source: active?.source ?? 'none',
       centerLabel: active?.centerLabel ?? '',
       radiusMiles: active?.radiusMiles ?? null,
     });

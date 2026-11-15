@@ -10,15 +10,13 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 
 <p align="center">
   <img src="docs/images/popup.png" width="300" alt="The popup, matching Facebook's location and showing how many listings were hidden" />
-  &nbsp;
-  <img src="docs/images/popup-suggestions.png" width="300" alt="City suggestions appearing while typing in the popup" />
 </p>
 
 ## What it hides
 
 | Listing | Hidden when |
 | --- | --- |
-| Out of range | Its city is farther from your centre than your radius |
+| Out of range | Its city is more than your radius + 15 miles from your centre (the 15-mile grace can be turned off) |
 | Shipping-only | It is marked "Ships to you" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
 | Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
@@ -41,12 +39,13 @@ The extension is not on the Chrome Web Store yet, so load it from source:
 ## Using it
 
 By default there is nothing to set up. The extension reads the location and
-radius from Marketplace's own location filter and applies them properly.
+radius from Marketplace's own location filter and applies them properly. To
+change the area, change it in Marketplace.
 
-To use a different location, click the toolbar icon and start typing in the
-**City** field. Matching cities appear as you type, nearest first; pick one
-with the mouse, Enter, or Tab. Your choice stays in effect until you click
-**Use Facebook's location**.
+Because Facebook's location isn't exact and distances are measured in a
+straight line between town centres, towns up to 15 miles past the radius are
+kept. Turn off **Allow 15 mi past the radius** in the popup to cut off at the
+radius exactly.
 
 The popup also shows how many listings were hidden on the current page and why.
 

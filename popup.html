@@ -78,53 +78,9 @@
       .switch:checked::after {
         transform: translateX(14px);
       }
-      .field {
-        position: relative;
-        margin-bottom: 10px;
-      }
-      .field label {
-        display: block;
-      }
-      .field span {
-        display: block;
-        margin-bottom: 3px;
-        color: var(--muted);
-      }
-      .field input {
-        box-sizing: border-box;
-        width: 100%;
-        padding: 6px 8px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: transparent;
-        color: inherit;
-        font: inherit;
-      }
       :focus-visible {
         outline: 2px solid var(--on);
         outline-offset: 1px;
-      }
-      #suggestions {
-        position: absolute;
-        z-index: 1;
-        top: 100%;
-        left: 0;
-        right: 0;
-        margin: 2px 0 0;
-        padding: 4px;
-        list-style: none;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: var(--surface);
-        box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
-      }
-      #suggestions li {
-        padding: 5px 8px;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      #suggestions li[aria-selected='true'] {
-        background: var(--active);
       }
       .source {
         display: flex;
@@ -149,12 +105,25 @@
         font: inherit;
         cursor: pointer;
       }
-      #status {
-        margin-top: 8px;
-        color: var(--error);
+      .grace {
+        display: flex;
+        align-items: center;
+        gap: 6px;
       }
-      #status:empty {
-        display: none;
+      .info {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        padding: 0;
+        border-radius: 50%;
+        font-size: 11px;
+        line-height: 16px;
+        color: var(--muted);
+      }
+      .help {
+        margin: 4px 0 2px 23px;
+        color: var(--muted);
       }
       hr {
         margin: 12px 0;
@@ -222,30 +191,6 @@
       <input type="checkbox" id="enabled" class="switch" role="switch" aria-label="Enabled" />
     </header>
 
-    <div class="field">
-      <label>
-        <span>City</span>
-        <input
-          type="text"
-          id="city"
-          placeholder="Start typing a city"
-          autocomplete="off"
-          role="combobox"
-          aria-autocomplete="list"
-          aria-expanded="false"
-          aria-controls="suggestions"
-        />
-      </label>
-      <ul id="suggestions" role="listbox" hidden></ul>
-    </div>
-
-    <div class="field">
-      <label>
-        <span>Radius (miles)</span>
-        <input type="number" id="radius" min="1" max="500" step="1" />
-      </label>
-    </div>
-
     <div class="source">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" stroke-linejoin="round" />
@@ -253,14 +198,19 @@
       </svg>
       <span id="source"></span>
     </div>
-    <button type="button" id="useFacebook" hidden>Use Facebook's location</button>
-    <div id="status" role="status"></div>
 
     <hr />
 
     <label class="check"><input type="checkbox" id="hideShipping" /> Hide shipping-only</label>
     <label class="check"><input type="checkbox" id="hideAds" /> Hide ads from sellers</label>
     <label class="check"><input type="checkbox" id="hideUnknown" /> Hide unknown cities</label>
+    <div class="grace">
+      <label class="check" title="Recommended: Facebook's location isn't 100% accurate">
+        <input type="checkbox" id="grace" /> <span id="graceLabel"></span>
+      </label>
+      <button type="button" id="graceInfo" class="info" aria-label="What is this?" aria-expanded="false" aria-controls="graceHelp">?</button>
+    </div>
+    <p id="graceHelp" class="help" hidden></p>
 
     <hr />
 

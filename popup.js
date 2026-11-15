@@ -2,15 +2,13 @@
   const G = globalThis.MLFGeo;
   const $ = (id) => document.getElementById(id);
   const enabled = $('enabled');
-  const city = $('city');
-  const suggestions = $('suggestions');
-  const radius = $('radius');
   const hideShipping = $('hideShipping');
   const hideAds = $('hideAds');
   const hideUnknown = $('hideUnknown');
-  const useFacebook = $('useFacebook');
+  const grace = $('grace');
+  const graceInfo = $('graceInfo');
+  const graceHelp = $('graceHelp');
   const source = $('source');
-  const status = $('status');
   const counts = $('counts');
   const unknownBox = $('unknownBox');
   const unknownList = $('unknownList');
@@ -18,6 +16,17 @@
   const farBox = $('farBox');
   const farList = $('farList');
   let unknownSamples = [];
+
+  $('graceLabel').textContent = `Allow ${G.GRACE_MILES} mi past the radius`;
+  graceHelp.textContent =
+    `Recommended. Facebook's location isn't 100% accurate, and distances here are ` +
+    `straight lines between town centres, so a town a few miles past your radius ` +
+    `is usually just as close. With this on, only towns more than ${G.GRACE_MILES} ` +
+    `miles past the radius are hidden.`;
+  graceInfo.addEventListener('click', () => {
+    graceHelp.hidden = !graceHelp.hidden;
+    graceInfo.setAttribute('aria-expanded', String(!graceHelp.hidden));
+  });
 
   copyUnknown.addEventListener('click', async () => {
     const text = unknownSamples.join('\n');
@@ -42,51 +51,23 @@
   let settings = { ...G.DEFAULT_SETTINGS, ...stored.settings };
   // Facebook's own location filter, as last read by the content script.
   let fbLocation = (await chrome.storage.local.get('fbLocation')).fbLocation ?? null;
-  // The city table is only needed to check a typed city and to suggest
-  // cities, so it loads in the background and the popup shows straight away.
-  let table = null;
-  let cityIndex = [];
-  const getJson = (path) => fetch(chrome.runtime.getURL(path)).then((r) => r.json());
-  const tableReady = Promise.all([
-    getJson('data/places.json'),
-    getJson('data/aliases.json').catch(() => ({})),
-  ]).then(([t, aliases]) => {
-    // Suggestions come from the city table only: the aliases' many
-    // neighborhoods and hamlets would crowd out the towns people pick. A
-    // typed alias is still accepted.
-    cityIndex = G.buildCityIndex(t);
-    table = G.withAliases(t, aliases);
-  });
 
-  function showError(message) {
-    status.textContent = message;
-  }
-
-  // Fills the city and radius fields and says where they came from.
+  // Shows the toggles and the area being filtered, which is always
+  // Marketplace's own location filter.
   function render() {
-    const shown = G.popupLocation(settings, fbLocation);
-    city.value = shown.city;
-    radius.value = shown.radius;
     enabled.checked = settings.enabled;
     hideShipping.checked = settings.hideShipping;
     hideAds.checked = settings.hideAds;
     hideUnknown.checked = settings.hideUnknown;
-    useFacebook.hidden = !settings.manualOverride;
-    if (shown.source === 'facebook') {
-      source.textContent = "Matching Facebook's location. Edit to override.";
-    } else if (settings.manualOverride) {
-      source.textContent = 'Using your own location.';
-    } else if (settings.center) {
-      source.textContent = "Facebook's location not read yet; using your saved city.";
-    } else {
-      source.textContent = 'Open Marketplace to pick up its location, or enter a city.';
-    }
+    grace.checked = settings.grace;
+    source.textContent = fbLocation
+      ? `${fbLocation.city}, ${fbLocation.state} · within ${Math.round(fbLocation.radiusMiles)} mi (from Facebook)`
+      : 'Open Marketplace so its location can be read.';
   }
 
   async function save(patch) {
     settings = { ...settings, ...patch };
     await chrome.storage.sync.set({ settings });
-    showError('');
     render();
     setTimeout(refreshCounts, 400); // let the page re-filter first
   }
@@ -95,98 +76,7 @@
   hideShipping.addEventListener('change', () => save({ hideShipping: hideShipping.checked }));
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
-  useFacebook.addEventListener('click', () => save({ manualOverride: false }));
-
-  // Editing either field switches to a manual location made of both fields
-  // as currently shown, so changing only the radius keeps the shown city.
-  async function saveManualLocation() {
-    await tableReady;
-    const label = city.value.trim();
-    const loc = G.parseLocationLine(label);
-    const coords = loc && G.lookup(table, loc.city, loc.state);
-    if (!coords) return showError('City not found — use the form "City, ST"');
-    const miles = Number(radius.value);
-    if (!radius.value.trim() || !Number.isFinite(miles) || miles < 1 || miles > 500) {
-      return showError('Radius must be 1–500 miles');
-    }
-    return save({ manualOverride: true, centerLabel: label, center: coords, radiusMiles: miles });
-  }
-
-  // Suggestions under the city field while typing: nearest matches first,
-  // measured from the location currently in effect.
-  let matches = [];
-  let active = -1;
-
-  function closeSuggestions() {
-    matches = [];
-    active = -1;
-    suggestions.hidden = true;
-    suggestions.replaceChildren();
-    city.setAttribute('aria-expanded', 'false');
-    city.removeAttribute('aria-activedescendant');
-  }
-
-  function highlight(index) {
-    active = index;
-    [...suggestions.children].forEach((li, i) => li.setAttribute('aria-selected', i === active));
-    city.setAttribute('aria-activedescendant', `suggestion-${active}`);
-  }
-
-  function showSuggestions() {
-    if (!table) return tableReady.then(showSuggestions);
-    const near = G.effectiveSettings(settings, fbLocation, table).center;
-    matches = G.suggestCities(cityIndex, city.value, near);
-    if (!matches.length) return closeSuggestions();
-    suggestions.replaceChildren(
-      ...matches.map((match, i) => {
-        const li = document.createElement('li');
-        li.id = `suggestion-${i}`;
-        li.setAttribute('role', 'option');
-        li.textContent = match.label;
-        return li;
-      }),
-    );
-    suggestions.hidden = false;
-    city.setAttribute('aria-expanded', 'true');
-    highlight(0);
-  }
-
-  function pickSuggestion(index) {
-    city.value = matches[index].label;
-    closeSuggestions();
-    saveManualLocation();
-  }
-
-  city.addEventListener('input', showSuggestions);
-  city.addEventListener('keydown', (e) => {
-    if (suggestions.hidden) return;
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const step = e.key === 'ArrowDown' ? 1 : -1;
-      highlight((active + step + matches.length) % matches.length);
-    } else if (e.key === 'Enter' || e.key === 'Tab') {
-      if (e.key === 'Enter') e.preventDefault();
-      pickSuggestion(active);
-    } else if (e.key === 'Escape') {
-      e.preventDefault(); // keep the popup open; just close the list
-      closeSuggestions();
-    }
-  });
-  // mousedown, not click, so the field keeps focus and does not fire `change`
-  // with the half-typed text first.
-  suggestions.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    const li = e.target.closest('li');
-    if (li) pickSuggestion([...suggestions.children].indexOf(li));
-  });
-  suggestions.addEventListener('mousemove', (e) => {
-    const li = e.target.closest('li');
-    if (li) highlight([...suggestions.children].indexOf(li));
-  });
-  city.addEventListener('blur', closeSuggestions);
-
-  city.addEventListener('change', saveManualLocation);
-  radius.addEventListener('change', saveManualLocation);
+  grace.addEventListener('change', () => save({ grace: grace.checked }));
 
   // The counts are redrawn only when they change, so the periodic refresh
   // does not take keyboard focus off the "unknown city" toggle.
