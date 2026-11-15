@@ -15,6 +15,8 @@
   const unknownBox = $('unknownBox');
   const unknownList = $('unknownList');
   const copyUnknown = $('copyUnknown');
+  const farBox = $('farBox');
+  const farList = $('farList');
   let unknownSamples = [];
 
   copyUnknown.addEventListener('click', async () => {
@@ -190,6 +192,21 @@
   // does not take keyboard focus off the "unknown city" toggle.
   let lastCounts = null;
 
+  // A count phrase that shows or hides the list box below the counts.
+  function listToggle(text, box) {
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'link';
+    toggle.textContent = text;
+    toggle.setAttribute('aria-expanded', String(!box.hidden));
+    toggle.setAttribute('aria-controls', box.id);
+    toggle.addEventListener('click', () => {
+      box.hidden = !box.hidden;
+      toggle.setAttribute('aria-expanded', String(!box.hidden));
+    });
+    return toggle;
+  }
+
   async function refreshCounts() {
     let tab;
     try {
@@ -199,21 +216,36 @@
       const key = JSON.stringify(c);
       if (key === lastCounts) return;
       lastCounts = key;
-      counts.textContent = `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · `;
+      counts.replaceChildren('Hidden: ');
+
+      // "N out of range" opens the hidden cities, nearest first.
+      const far = c.farCities ?? [];
+      const farText = `${c.far} out of range`;
+      if (c.far > 0 && far.length) {
+        counts.append(listToggle(farText, farBox));
+        farList.replaceChildren(
+          ...far.map(({ label, count, miles }) => {
+            const li = document.createElement('li');
+            const name = document.createElement('span');
+            name.textContent = count > 1 ? `${label} (${count})` : label;
+            const dist = document.createElement('span');
+            dist.className = 'miles';
+            dist.textContent = miles === null ? 'out of state' : `${miles} mi`;
+            li.append(name, dist);
+            return li;
+          }),
+        );
+      } else {
+        counts.append(farText);
+        farBox.hidden = true;
+      }
+      counts.append(`, ${c.ship} shipping, ${c.ad} ads · `);
+
+      // "N unknown city" opens the location lines that were not recognised.
       const unknownText = `${c.unknown} unknown city${c.unknownHidden ? ' (hidden)' : ''}`;
       unknownSamples = c.unknownSamples ?? [];
       if (c.unknown > 0 && unknownSamples.length) {
-        // The phrase opens a list of the location lines that were not recognised.
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'link';
-        toggle.textContent = unknownText;
-        toggle.setAttribute('aria-expanded', String(!unknownBox.hidden));
-        toggle.addEventListener('click', () => {
-          unknownBox.hidden = !unknownBox.hidden;
-          toggle.setAttribute('aria-expanded', String(!unknownBox.hidden));
-        });
-        counts.append(toggle);
+        counts.append(listToggle(unknownText, unknownBox));
         unknownList.replaceChildren(
           ...unknownSamples.map((line) => {
             const li = document.createElement('li');
@@ -228,6 +260,7 @@
     } catch {
       lastCounts = null;
       unknownBox.hidden = true;
+      farBox.hidden = true;
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.
       const url = tab?.url ?? '';

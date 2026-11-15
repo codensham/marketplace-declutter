@@ -262,6 +262,22 @@ test('lookup falls back to variants and aliases', () => {
   assert.deepEqual(G.lookup(t, 'N Chesterfield', 'VA'), [37.53, -77.52]);
   assert.equal(G.lookup(t, 'Nowhere', 'VA'), null);
 });
+test('farCities: one row per city, nearest first, unplaced last', () => {
+  const t = { 'richmond|VA': [37.54, -77.44], 'norfolk|VA': [36.85, -76.29] };
+  const rows = G.farCities(
+    ['Norfolk, VA', 'Richmond, VA', 'Norfolk, VA', 'Austin, TX', '', null],
+    t,
+    [38.03, -78.48], // Charlottesville
+  );
+  assert.deepEqual(rows.map((r) => [r.label, r.count]), [
+    ['Richmond, VA', 1],
+    ['Norfolk, VA', 2],
+    ['Austin, TX', 1],
+  ]);
+  assert.ok(rows[0].miles > 50 && rows[0].miles < 70);
+  assert.equal(rows[2].miles, null);
+  assert.equal(G.farCities(['A, VA', 'B, VA'], {}, null, 1).length, 1);
+});
 test('lookup ignores accents', () => {
   const t = { 'rancho penasquitos|CA': [32.959, -117.115] };
   assert.deepEqual(G.lookup(t, 'Rancho Peñasquitos', 'CA'), [32.959, -117.115]);

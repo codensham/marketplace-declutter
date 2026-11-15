@@ -184,15 +184,26 @@
         color: inherit;
         text-decoration: underline dotted;
       }
-      #unknownBox {
+      #unknownBox,
+      #farBox {
         margin-top: 6px;
         color: var(--muted);
       }
-      #unknownList {
+      #unknownList,
+      #farList {
         max-height: 120px;
         overflow-y: auto;
         margin: 0 0 6px;
         padding-left: 18px;
+      }
+      #farList li {
+        display: flex;
+        gap: 8px;
+      }
+      #farList .miles {
+        margin-left: auto;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
       }
       #copyUnknown {
         margin-top: 0;
@@ -254,6 +265,9 @@
     <hr />
 
     <div id="counts"></div>
+    <div id="farBox" hidden>
+      <ul id="farList"></ul>
+    </div>
     <div id="unknownBox" hidden>
       <ul id="unknownList"></ul>
       <button type="button" id="copyUnknown">Copy</button>

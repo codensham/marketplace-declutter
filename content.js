@@ -256,6 +256,13 @@
         [...document.querySelectorAll('[data-mlf="unknown"]')].map((c) => c.getAttribute('data-mlf-loc')),
       ),
       unknownHidden: Boolean(active?.hideUnknown),
+      farCities: table
+        ? G.farCities(
+            [...document.querySelectorAll('[data-mlf="far"]')].map((c) => c.getAttribute('data-mlf-loc')),
+            table,
+            active?.center ?? null,
+          )
+        : [],
       active: onMarketplace(),
       source: active?.source ?? 'manual',
       centerLabel: active?.centerLabel ?? '',
