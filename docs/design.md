@@ -139,6 +139,22 @@ A listing in range that also offers shipping stays visible.
 - Name normalisation (case, "St."/"Saint", suffixes like "city"/"township")
   lives in `lib/geo.js` and is shared by the generator and the lookup.
 
+### Aliases
+
+- Facebook also labels listings with neighborhoods ("Hollywood, CA") that no
+  postal or Census list has. `data/aliases.json` fills these from the
+  GeoNames gazetteer's populated places: about 114,000 names, 3.9 MB, about
+  40 ms to parse. Aliases never overwrite the city table.
+- A name found at points more than 10 miles apart in one state is left out:
+  an unknown card stays visible by default, while a wrong point could hide a
+  local listing. Trailer parks, apartment complexes and subdivisions are left
+  out too.
+- `scripts/manual-aliases.json` adds names GeoNames lacks ("SoMa", "Bed-Stuy")
+  and removes ones where a famous neighborhood shares its name with a smaller
+  GeoNames place ("Wynwood, FL", "Lakeview, IL").
+- City suggestions in the popup use the city table only, so hamlets don't
+  crowd out towns; a typed alias is still accepted.
+
 ### Testing
 
 - `lib/geo.js` is pure and unit-tested with Node's built-in test runner:

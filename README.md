@@ -78,8 +78,9 @@ Full details are in the [privacy policy](PRIVACY.md).
 | `lib/geo.js` | Pure logic: parsing, city lookup, distance, suggestions |
 | `popup.html`, `popup.js` | Settings and hidden counts |
 | `data/places.json` | About 50,000 US cities with coordinates |
-| `data/aliases.json` | Alternative names for cities Facebook spells differently |
+| `data/aliases.json` | About 114,000 neighborhoods and communities the city table lacks |
 | `scripts/build-places.mjs` | Regenerates the city table (development only) |
+| `scripts/build-aliases.mjs` | Regenerates the aliases from GeoNames plus `scripts/manual-aliases.json` |
 
 There is no build step and no runtime dependency. The reasoning behind the
 design is in [docs/design.md](docs/design.md).
@@ -92,7 +93,7 @@ Requires Node 20 or later, used only for tests and for regenerating the city tab
 npm test
 ```
 
-To regenerate `data/places.json`, see [NOTICE.md](NOTICE.md) for the source
+To regenerate `data/places.json` or `data/aliases.json`, see [NOTICE.md](NOTICE.md) for the source
 files and the command.
 
 After changing code, click the reload icon for the extension at

@@ -49,8 +49,11 @@
     getJson('data/places.json'),
     getJson('data/aliases.json').catch(() => ({})),
   ]).then(([t, aliases]) => {
+    // Suggestions come from the city table only: the aliases' many
+    // neighborhoods and hamlets would crowd out the towns people pick. A
+    // typed alias is still accepted.
+    cityIndex = G.buildCityIndex(t);
     table = G.withAliases(t, aliases);
-    cityIndex = G.buildCityIndex(table);
   });
 
   function showError(message) {

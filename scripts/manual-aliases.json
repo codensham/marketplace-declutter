@@ -1,0 +1,20 @@
+{
+  "_comment": "Hand-kept entries for scripts/build-aliases.mjs. They override GeoNames: [lat, lon] adds or moves a name, null leaves it out (a famous neighborhood shares its name with a smaller GeoNames place elsewhere in the state).",
+  "ahwatukee|AZ": [33.342, -111.984],
+  "arcadia|AZ": [33.497, -111.972],
+  "downtown los angeles|CA": [34.045, -118.251],
+  "point loma|CA": [32.734, -117.237],
+  "soma|CA": [37.778, -122.405],
+  "brickell|FL": [25.762, -80.193],
+  "wynwood|FL": null,
+  "kakaako|HI": [21.297, -157.86],
+  "lakeview|IL": null,
+  "bed-stuy|NY": [40.683, -73.941],
+  "short north|OH": [39.98, -83.004],
+  "pearl district|OR": [45.528, -122.683],
+  "deep ellum|TX": [32.784, -96.783],
+  "lake highlands|TX": [32.874, -96.72],
+  "montrose|TX": [29.745, -95.391],
+  "north chesterfield|VA": [37.536, -77.527],
+  "south chesterfield|VA": [37.28, -77.43]
+}

@@ -262,6 +262,10 @@ test('lookup falls back to variants and aliases', () => {
   assert.deepEqual(G.lookup(t, 'N Chesterfield', 'VA'), [37.53, -77.52]);
   assert.equal(G.lookup(t, 'Nowhere', 'VA'), null);
 });
+test('lookup ignores accents', () => {
+  const t = { 'rancho penasquitos|CA': [32.959, -117.115] };
+  assert.deepEqual(G.lookup(t, 'Rancho Peñasquitos', 'CA'), [32.959, -117.115]);
+});
 test('withAliases never overwrites the table', () => {
   const t = G.withAliases({ 'a|VA': [1, 1] }, { 'a|VA': [2, 2] });
   assert.deepEqual(t['a|VA'], [1, 1]);
