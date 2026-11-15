@@ -183,12 +183,19 @@
   city.addEventListener('change', saveManualLocation);
   radius.addEventListener('change', saveManualLocation);
 
+  // The counts are redrawn only when they change, so the periodic refresh
+  // does not take keyboard focus off the "unknown city" toggle.
+  let lastCounts = null;
+
   async function refreshCounts() {
     let tab;
     try {
       [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
+      const key = JSON.stringify(c);
+      if (key === lastCounts) return;
+      lastCounts = key;
       counts.textContent = `Hidden: ${c.far} out of range, ${c.ship} shipping, ${c.ad} ads · `;
       const unknownText = `${c.unknown} unknown city${c.unknownHidden ? ' (hidden)' : ''}`;
       unknownSamples = c.unknownSamples ?? [];
@@ -216,6 +223,7 @@
         unknownBox.hidden = true;
       }
     } catch {
+      lastCounts = null;
       unknownBox.hidden = true;
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.
@@ -231,8 +239,12 @@
     if (area !== 'local' || !changes.fbLocation) return;
     fbLocation = changes.fbLocation.newValue ?? null;
     render();
+    setTimeout(refreshCounts, 400); // let the page re-filter first
   });
 
   render();
   refreshCounts();
+  // The page keeps filtering while the popup is open (more listings load as
+  // the feed scrolls), so keep the counts current.
+  setInterval(refreshCounts, 1500);
 })();

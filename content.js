@@ -50,6 +50,14 @@
     return node;
   }
 
+  // A card already judged is found again through its marker rather than by
+  // measuring: a hidden card has no size, so cellOf would stop at the link.
+  function cellFor(anchor, id) {
+    const judged = anchor.closest('[data-mlf]');
+    if (judged && [...judged.querySelectorAll(ITEM)].every((l) => itemId(l) === id)) return judged;
+    return cellOf(anchor);
+  }
+
   function loadTable() {
     if (table || tableLoading) return;
     tableLoading = true;
@@ -66,10 +74,15 @@
   }
 
   // Reads Marketplace's own location filter. Pages without the filter (a
-  // single listing, say) keep the last value read in this tab.
+  // single listing, say) keep the last value read in this tab. Only a
+  // rendered filter counts: Facebook can keep an earlier page mounted but
+  // hidden, and its filter would still show the old location.
   // Returns true when the location in force changed.
   function syncFacebookLocation() {
-    const label = document.querySelector(G.FB_LOCATION_SELECTOR)?.getAttribute('aria-label');
+    const filter = [...document.querySelectorAll(G.FB_LOCATION_SELECTOR)].find(
+      (el) => el.getClientRects().length > 0,
+    );
+    const label = filter?.getAttribute('aria-label');
     if (!label || label === fbLabel) return false;
     fbLabel = label;
     const parsed = G.parseFacebookLocation(label);
@@ -95,23 +108,29 @@
 
     // Read everything first, then write. Hiding a card between reads would
     // make the browser redo layout for every card measured after it.
-    // An anchor is marked seen once its card has a final verdict; anchors of
-    // unknown cards stay unseen so later passes can read the card again.
+    // An anchor is marked seen, with its listing's id, once its card has a
+    // final verdict; anchors of unknown cards stay unseen so later passes can
+    // read the card again. Keeping the id means a link Facebook reuses for a
+    // different listing is judged afresh instead of keeping the old verdict.
     const seen = [];
-    const judged = new Map(); // cell -> { verdict, loc, tries, isNew, anchors }
-    for (const anchor of document.querySelectorAll(`${ITEM}:not([data-mlf-seen])`)) {
-      if (!itemId(anchor)) {
+    const judged = new Map(); // cell -> { id, verdict, loc, tries, isNew, anchors }
+    for (const anchor of document.querySelectorAll(ITEM)) {
+      const id = itemId(anchor) ?? '';
+      if (anchor.getAttribute('data-mlf-seen') === id) continue;
+      if (!id) {
         seen.push(anchor);
         continue;
       }
-      const cell = cellOf(anchor);
+      const cell = cellFor(anchor, id);
       const entry = judged.get(cell);
       if (entry) {
         entry.anchors.push(anchor);
         continue;
       }
-      const previous = cell.getAttribute('data-mlf');
-      const tries = Number(cell.getAttribute('data-mlf-tries')) || 0;
+      // A verdict recorded for another listing does not carry over.
+      const sameListing = cell.getAttribute('data-mlf-id') === id;
+      const previous = sameListing ? cell.getAttribute('data-mlf') : null;
+      const tries = sameListing ? Number(cell.getAttribute('data-mlf-tries')) || 0 : 0;
       if (!G.shouldRejudge(previous, tries)) {
         seen.push(anchor);
         continue;
@@ -120,14 +139,15 @@
       if (!lines.length) continue; // text not rendered yet; look again on the next pass
       const loc = G.extractLocationLine(lines);
       const verdict = G.decide(loc, active, table, stateBounds);
-      judged.set(cell, { verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
+      judged.set(cell, { id, verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
     }
 
-    for (const anchor of seen) anchor.setAttribute('data-mlf-seen', '');
+    for (const anchor of seen) anchor.setAttribute('data-mlf-seen', itemId(anchor) ?? '');
     let hid = 0;
     let fresh = 0;
     let pending = 0; // unknown cards with re-checks left
-    for (const [cell, { verdict, loc, tries, isNew, anchors }] of judged) {
+    for (const [cell, { id, verdict, loc, tries, isNew, anchors }] of judged) {
+      cell.setAttribute('data-mlf-id', id);
       cell.setAttribute('data-mlf', verdict);
       cell.setAttribute('data-mlf-loc', loc);
       if (isNew) fresh++;
@@ -139,7 +159,7 @@
       } else {
         cell.removeAttribute('data-mlf-tries');
       }
-      if (final) for (const a of anchors) a.setAttribute('data-mlf-seen', '');
+      if (final) for (const a of anchors) a.setAttribute('data-mlf-seen', id);
       if (G.hides(verdict, active, final)) {
         cell.setAttribute('data-mlf-hidden', verdict);
         hid++;
@@ -182,6 +202,7 @@
   function reset() {
     for (const el of document.querySelectorAll('[data-mlf], [data-mlf-hidden], [data-mlf-seen]')) {
       el.removeAttribute('data-mlf');
+      el.removeAttribute('data-mlf-id');
       el.removeAttribute('data-mlf-loc');
       el.removeAttribute('data-mlf-tries');
       el.removeAttribute('data-mlf-hidden');
@@ -234,10 +255,11 @@
   // filter rewrites the label on the existing button rather than replacing
   // it, often after the new feed has rendered; without it the change would
   // go unseen until the next unrelated page change.
+  // href is watched so a link reused for another listing is re-judged.
   new MutationObserver(schedule).observe(document.documentElement, {
     childList: true,
     subtree: true,
     attributes: true,
-    attributeFilter: ['aria-label'],
+    attributeFilter: ['aria-label', 'href'],
   });
 })();
