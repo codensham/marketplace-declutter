@@ -58,6 +58,18 @@
     return cellOf(anchor);
   }
 
+  // A card's text, one entry per line. innerText follows the layout, so it
+  // drops the line breaks of a card that is not rendered (one we hid, or a
+  // feed Facebook hides while it loads another location) and glues price,
+  // title and city into one line. Such a card is read one text node per line.
+  function cardLinesOf(cell) {
+    if (cell.checkVisibility()) return G.cardLines(cell.innerText);
+    const texts = [];
+    const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) texts.push(walker.currentNode.nodeValue);
+    return G.cardLines(texts.join('\n'));
+  }
+
   function loadTable() {
     if (table || tableLoading) return;
     tableLoading = true;
@@ -135,7 +147,7 @@
         seen.push(anchor);
         continue;
       }
-      const lines = G.cardLines(cell.innerText);
+      const lines = cardLinesOf(cell);
       if (!lines.length) continue; // text not rendered yet; look again on the next pass
       const loc = G.extractLocationLine(lines);
       const verdict = G.decide(loc, active, table, stateBounds);
