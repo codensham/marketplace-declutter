@@ -230,8 +230,14 @@
     });
   });
 
+  // aria-label is watched because changing the location in Marketplace's
+  // filter rewrites the label on the existing button rather than replacing
+  // it, often after the new feed has rendered; without it the change would
+  // go unseen until the next unrelated page change.
   new MutationObserver(schedule).observe(document.documentElement, {
     childList: true,
     subtree: true,
+    attributes: true,
+    attributeFilter: ['aria-label'],
   });
 })();
