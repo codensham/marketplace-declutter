@@ -236,7 +236,9 @@
     for (const cell of document.querySelectorAll('[data-mlf-id]')) {
       if (cell.hasAttribute('data-mlf-hidden')) continue;
       const want = Object.hasOwn(viewed, cell.getAttribute('data-mlf-id'));
-      const badge = cell.querySelector('[data-mlf-badge]');
+      // Only this cell's own badge: a stale outer cell must not remove the
+      // badge of a cell inside it, or the two would undo each other forever.
+      const badge = [...cell.querySelectorAll('[data-mlf-badge]')].find((b) => b.closest('[data-mlf-id]') === cell);
       if (want && !badge) {
         const host = cell.querySelector('img')?.parentElement;
         if (!host) continue;

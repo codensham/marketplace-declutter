@@ -44,7 +44,9 @@ test('withPrice keeps unknown prices', () => {
 test('normalizePriceRange', () => {
   assert.deepEqual(L.normalizePriceRange('', ''), { priceMin: null, priceMax: null });
   assert.deepEqual(L.normalizePriceRange('50', '200'), { priceMin: 50, priceMax: 200 });
-  assert.deepEqual(L.normalizePriceRange('200', '50'), { priceMin: 50, priceMax: 200 });
+  // Min above max is mid-edit, not a range to save (typing Min 200 over 0–100).
+  assert.equal(L.normalizePriceRange('200', '50'), null);
+  assert.equal(L.normalizePriceRange('200', '100'), null);
   assert.deepEqual(L.normalizePriceRange('-5', 'abc'), { priceMin: null, priceMax: null });
   assert.deepEqual(L.normalizePriceRange('0', ''), { priceMin: 0, priceMax: null });
 });

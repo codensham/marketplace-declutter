@@ -8,6 +8,7 @@
   const grace = $('grace');
   const priceMin = $('priceMin');
   const priceMax = $('priceMax');
+  const priceHint = $('priceHint');
   const graceInfo = $('graceInfo');
   const graceHelp = $('graceHelp');
   const source = $('source');
@@ -81,10 +82,23 @@
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
   grace.addEventListener('change', () => save({ grace: grace.checked }));
-  // Saved as a pair so a swapped or cleared range shows corrected at once.
-  const savePrice = () => save(globalThis.MLFListing.normalizePriceRange(priceMin.value, priceMax.value));
-  priceMin.addEventListener('change', savePrice);
-  priceMax.addEventListener('change', savePrice);
+  // Saved as a pair, while typing: the popup closes the moment the user
+  // clicks back on the page, often before the field loses focus. A minimum
+  // above the maximum is left unsaved until the other field catches up.
+  let priceTimer = null;
+  const savePrice = () => {
+    clearTimeout(priceTimer);
+    const range = globalThis.MLFListing.normalizePriceRange(priceMin.value, priceMax.value);
+    priceHint.hidden = range !== null;
+    if (range && (range.priceMin !== settings.priceMin || range.priceMax !== settings.priceMax)) save(range);
+  };
+  for (const field of [priceMin, priceMax]) {
+    field.addEventListener('input', () => {
+      clearTimeout(priceTimer);
+      priceTimer = setTimeout(savePrice, 400);
+    });
+    field.addEventListener('change', savePrice);
+  }
 
   // The counts are redrawn only when they change, so the periodic refresh
   // does not take keyboard focus off the "unknown city" toggle.

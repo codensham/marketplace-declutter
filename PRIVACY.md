@@ -1,6 +1,6 @@
 # Privacy policy for Marketplace Declutter
 
-Effective date: 22 November 2026
+Effective date: 24 November 2026
 
 Marketplace Declutter is a browser extension that hides Facebook Marketplace
 listings that are outside your chosen radius, shipping-only, or seller ads.
@@ -25,9 +25,12 @@ On pages under `facebook.com/marketplace`, the extension reads:
 When you open the extension's popup, it reads the address of the current tab
 only to tell you whether you are on Marketplace.
 
+When you open a listing, it reads the listing's number from the page address,
+so it can mark that listing "Viewed" in the feed.
+
 It does not read your messages, profile, friends, or any page outside
 Marketplace, and it does not read listing cards for any purpose other than
-deciding whether to hide them.
+deciding whether to hide them or mark them as viewed.
 
 ## What the extension stores
 
@@ -35,15 +38,19 @@ Using the browser's extension storage, the extension saves:
 
 - your settings: whether it is on, whether to allow a 15-mile margin past
   the radius, and whether to hide shipping-only listings, seller ads, and
-  listings with an unknown city;
+  listings with an unknown city, and the price range you set;
 - the last location and radius read from Marketplace's location filter, so
-  the next page can be filtered without waiting for it.
+  the next page can be filtered without waiting for it;
+- the numbers of listings you have opened, each with the day you last opened
+  it, so they can be marked "Viewed". At most 20,000 are kept; the oldest
+  are removed first.
 
 Settings are saved with `chrome.storage.sync`. If you have turned on sync in
 your browser, your browser may copy these settings to your other devices
 through your browser account; that is handled by your browser, and the
-extension's developer never receives them. The last-read location is saved
-with `chrome.storage.local` and stays on your device.
+extension's developer never receives them. The last-read location and the
+list of opened listings are saved with `chrome.storage.local` and stay on your
+device.
 
 You can delete all stored data at any time by removing the extension.
 
