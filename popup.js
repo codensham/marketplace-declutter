@@ -6,6 +6,8 @@
   const hideAds = $('hideAds');
   const hideUnknown = $('hideUnknown');
   const grace = $('grace');
+  const priceMin = $('priceMin');
+  const priceMax = $('priceMax');
   const graceInfo = $('graceInfo');
   const graceHelp = $('graceHelp');
   const source = $('source');
@@ -60,6 +62,8 @@
     hideAds.checked = settings.hideAds;
     hideUnknown.checked = settings.hideUnknown;
     grace.checked = settings.grace;
+    priceMin.value = settings.priceMin ?? '';
+    priceMax.value = settings.priceMax ?? '';
     source.textContent = fbLocation
       ? `${fbLocation.city}, ${fbLocation.state} · within ${Math.round(fbLocation.radiusMiles)} mi (from Facebook)`
       : 'Open Marketplace so its location can be read.';
@@ -77,6 +81,10 @@
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
   grace.addEventListener('change', () => save({ grace: grace.checked }));
+  // Saved as a pair so a swapped or cleared range shows corrected at once.
+  const savePrice = () => save(globalThis.MLFListing.normalizePriceRange(priceMin.value, priceMax.value));
+  priceMin.addEventListener('change', savePrice);
+  priceMax.addEventListener('change', savePrice);
 
   // The counts are redrawn only when they change, so the periodic refresh
   // does not take keyboard focus off the "unknown city" toggle.
@@ -129,7 +137,7 @@
         counts.append(farText);
         farBox.hidden = true;
       }
-      counts.append(`, ${c.ship} shipping, ${c.ad} ads · `);
+      counts.append(`, ${c.ship} shipping, ${c.ad} ads, ${c.price ?? 0} outside price range · `);
 
       // "N unknown city" opens the location lines that were not recognised.
       const unknownText = `${c.unknown} unknown city${c.unknownHidden ? ' (hidden)' : ''}`;

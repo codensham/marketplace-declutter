@@ -143,6 +143,21 @@
         margin: 0;
         accent-color: var(--on);
       }
+      .price {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 0;
+      }
+      .price input {
+        width: 70px;
+        padding: 3px 6px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
       #counts {
         color: var(--muted);
       }
@@ -211,6 +226,12 @@
       <button type="button" id="graceInfo" class="info" aria-label="What is this?" aria-expanded="false" aria-controls="graceHelp">?</button>
     </div>
     <p id="graceHelp" class="help" hidden></p>
+    <div class="price">
+      <label for="priceMin">Price</label>
+      <input type="number" id="priceMin" min="0" step="1" placeholder="Min" inputmode="numeric" />
+      <span>to</span>
+      <input type="number" id="priceMax" min="0" step="1" placeholder="Max" inputmode="numeric" aria-label="Maximum price" />
+    </div>
 
     <hr />
 
@@ -226,6 +247,7 @@
     <footer>City data: GeoNames (CC BY 4.0) and US Census Bureau.</footer>
 
     <script src="lib/geo.js"></script>
+    <script src="lib/listing.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

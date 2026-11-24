@@ -19,6 +19,7 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 | Out of range | Its city is more than your radius + 15 miles from your centre (the 15-mile grace can be turned off) |
 | Shipping-only | It is marked "Ships to you" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
+| Out of price range | Its price is below your minimum or above your maximum (blank = no limit; unreadable prices are kept) |
 | Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
 
 A listing is only hidden when the extension is sure. If a city is not
@@ -48,6 +49,9 @@ kept. Turn off **Allow 15 mi past the radius** in the popup to cut off at the
 radius exactly.
 
 The popup also shows how many listings were hidden on the current page and why.
+
+Listings you've opened show a "Viewed" badge on their photo in the feed. The
+list of opened listings is stored only in this browser.
 
 ## Privacy
 
