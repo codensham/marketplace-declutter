@@ -27,9 +27,17 @@
   let tableLoading = false;
   let scheduled = false;
   let nudges = 0;
+  let viewed = {}; // listing id -> day it was last opened, shared by all tabs
+  let saveTimer = null;
 
   const style = document.createElement('style');
-  style.textContent = '[data-mlf-hidden]{display:none!important}';
+  style.textContent =
+    '[data-mlf-hidden]{display:none!important}' +
+    '[data-mlf-badge-host]{position:relative}' +
+    '[data-mlf-badge]{position:absolute;top:6px;left:6px;z-index:1;display:flex;gap:4px;align-items:center;' +
+    'padding:2px 7px;border-radius:10px;background:#0f6e56;color:#fff;font:600 11px/16px system-ui,sans-serif;' +
+    'pointer-events:none}' +
+    '[data-mlf-badge] svg{width:12px;height:12px}';
   document.documentElement.appendChild(style);
 
   const onMarketplace = () => location.pathname.startsWith('/marketplace');
@@ -112,6 +120,7 @@
   function pass() {
     scheduled = false;
     if (!ready || !settings.enabled || !onMarketplace()) return;
+    recordOpenListing();
     if (!table) return loadTable();
     if (!active) {
       const fb = fbLabel ? G.parseFacebookLocation(fbLabel) : fbCached;
@@ -181,11 +190,63 @@
       }
     }
 
+    syncBadges();
     if (fresh) nudges = 0;
     if (hid) nudgeIfShort();
     // A quiet page triggers no further passes, so come back for the
     // remaining re-checks rather than waiting for the next page change.
     if (pending) setTimeout(schedule, RECHECK_MS);
+  }
+
+  // A listing open in this page (its own page or Facebook's overlay over the
+  // feed) is remembered as viewed. Saved shortly after, not on every pass.
+  function recordOpenListing() {
+    const id = L.viewedIdFromPath(location.pathname);
+    const day = L.today();
+    if (!id || viewed[id] === day) return;
+    viewed = L.recordViewed(viewed, id, day);
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => chrome.storage.local.set({ viewed }).catch(() => {}), 1000);
+  }
+
+  function makeBadge() {
+    const badge = document.createElement('div');
+    badge.setAttribute('data-mlf-badge', '');
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2.5');
+    svg.setAttribute('aria-hidden', 'true');
+    const eye = document.createElementNS(svg.namespaceURI, 'path');
+    eye.setAttribute('d', 'M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z');
+    const pupil = document.createElementNS(svg.namespaceURI, 'circle');
+    pupil.setAttribute('cx', '12');
+    pupil.setAttribute('cy', '12');
+    pupil.setAttribute('r', '3');
+    svg.append(eye, pupil);
+    badge.append(svg, 'Viewed');
+    return badge;
+  }
+
+  // Puts the badge on the photo of every judged card whose listing was
+  // opened, and takes it off a cell Facebook reused for another listing.
+  // Adding a badge triggers one more pass, which then changes nothing.
+  function syncBadges() {
+    for (const cell of document.querySelectorAll('[data-mlf-id]')) {
+      if (cell.hasAttribute('data-mlf-hidden')) continue;
+      const want = Object.hasOwn(viewed, cell.getAttribute('data-mlf-id'));
+      const badge = cell.querySelector('[data-mlf-badge]');
+      if (want && !badge) {
+        const host = cell.querySelector('img')?.parentElement;
+        if (!host) continue;
+        host.setAttribute('data-mlf-badge-host', '');
+        host.append(makeBadge());
+      } else if (!want && badge) {
+        badge.parentElement?.removeAttribute('data-mlf-badge-host');
+        badge.remove();
+      }
+    }
   }
 
   // Hiding cards can leave the page too short to trigger Facebook's next
@@ -221,6 +282,8 @@
       el.removeAttribute('data-mlf-hidden');
       el.removeAttribute('data-mlf-seen');
     }
+    for (const badge of document.querySelectorAll('[data-mlf-badge]')) badge.remove();
+    for (const host of document.querySelectorAll('[data-mlf-badge-host]')) host.removeAttribute('data-mlf-badge-host');
     nudges = 0;
     schedule();
   }
@@ -228,15 +291,23 @@
   // Settings, the last known Facebook location and the city table all load
   // at once, as soon as the page starts, so the first cards can be judged
   // the moment they render.
-  Promise.all([chrome.storage.sync.get('settings'), chrome.storage.local.get('fbLocation')])
+  Promise.all([chrome.storage.sync.get('settings'), chrome.storage.local.get(['fbLocation', 'viewed'])])
     .then(([stored, local]) => {
       settings = { ...G.DEFAULT_SETTINGS, ...stored.settings };
       fbCached = local.fbLocation ?? null;
+      viewed = { ...local.viewed, ...viewed };
       ready = true;
       schedule();
     })
     .catch(() => {}); // extension reloaded under this page
   if (onMarketplace()) loadTable();
+
+  // Listings opened in other tabs; this tab's own unsaved opens are kept.
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !changes.viewed) return;
+    viewed = { ...changes.viewed.newValue, ...viewed };
+    schedule();
+  });
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'sync' || !changes.settings) return;
