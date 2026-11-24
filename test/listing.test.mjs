@@ -48,3 +48,29 @@ test('normalizePriceRange', () => {
   assert.deepEqual(L.normalizePriceRange('-5', 'abc'), { priceMin: null, priceMax: null });
   assert.deepEqual(L.normalizePriceRange('0', ''), { priceMin: 0, priceMax: null });
 });
+
+test('viewedIdFromPath', () => {
+  assert.equal(L.viewedIdFromPath('/marketplace/item/123456/'), '123456');
+  assert.equal(L.viewedIdFromPath('/marketplace/item/123456'), '123456');
+  assert.equal(L.viewedIdFromPath('/marketplace/austin/'), null);
+  assert.equal(L.viewedIdFromPath('/groups/1/'), null);
+});
+
+test('recordViewed adds without mutating', () => {
+  const before = { a: 1 };
+  const after = L.recordViewed(before, 'b', 5);
+  assert.deepEqual(after, { a: 1, b: 5 });
+  assert.deepEqual(before, { a: 1 });
+});
+
+test('recordViewed prunes oldest', () => {
+  const v = L.recordViewed({ a: 1, b: 2, c: 3 }, 'd', 4, 3);
+  assert.deepEqual(Object.keys(v).sort(), ['b', 'c', 'd']);
+  const w = L.recordViewed({ a: 9, b: 9, c: 9 }, 'd', 1, 3);
+  assert.ok('d' in w);
+  assert.equal(Object.keys(w).length, 3);
+});
+
+test('today', () => {
+  assert.equal(L.today(86400000 * 3 + 5), 3);
+});
