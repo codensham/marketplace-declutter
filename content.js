@@ -10,6 +10,7 @@
 //    "Location: Springfield, Illinois, Within 40 mi", on browse and search pages.
 (() => {
   const G = globalThis.MLFGeo;
+  const L = globalThis.MLFListing;
   const ITEM = 'a[href*="/marketplace/item/"]';
   const MAX_NUDGES = 5;
   const RECHECK_MS = 400; // gap between re-checks of an unknown card
@@ -150,7 +151,7 @@
       const lines = cardLinesOf(cell);
       if (!lines.length) continue; // text not rendered yet; look again on the next pass
       const loc = G.extractLocationLine(lines);
-      const verdict = G.decide(loc, active, table, stateBounds);
+      const verdict = L.withPrice(G.decide(loc, active, table, stateBounds), L.cardPrice(lines), active);
       judged.set(cell, { id, verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
     }
 
@@ -251,6 +252,7 @@
       ad: count('ad'),
       ship: count('ship'),
       far: count('far'),
+      price: count('price'),
       unknown: count('unknown'),
       unknownSamples: G.unknownSamples(
         [...document.querySelectorAll('[data-mlf="unknown"]')].map((c) => c.getAttribute('data-mlf-loc')),
