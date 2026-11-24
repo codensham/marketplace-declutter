@@ -16,6 +16,7 @@ export const FILES = [
   'popup.html',
   'popup.js',
   'lib/geo.js',
+  'lib/listing.js',
   'data/places.json',
   'data/aliases.json',
   ...readdirSync(join(root, 'icons'))
@@ -26,7 +27,7 @@ export const FILES = [
 
 // Every file the manifest or popup points at must be in the zip.
 export function referencedFiles(manifest) {
-  const refs = new Set([manifest.action?.default_popup, 'popup.js', 'lib/geo.js']);
+  const refs = new Set([manifest.action?.default_popup, 'popup.js', 'lib/geo.js', 'lib/listing.js']);
   for (const p of Object.values(manifest.icons ?? {})) refs.add(p);
   for (const p of Object.values(manifest.action?.default_icon ?? {})) refs.add(p);
   for (const cs of manifest.content_scripts ?? []) for (const p of cs.js ?? []) refs.add(p);

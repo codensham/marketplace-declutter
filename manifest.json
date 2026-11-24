@@ -22,7 +22,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.facebook.com/*"],
-      "js": ["lib/geo.js", "content.js"],
+      "js": ["lib/geo.js", "lib/listing.js", "content.js"],
       "run_at": "document_start"
     }
   ],

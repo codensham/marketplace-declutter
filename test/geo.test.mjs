@@ -263,3 +263,15 @@ test('hides: an unknown card waits until its re-checks are over', () => {
   assert.equal(G.hides('unknown', on, true), true);
   assert.equal(G.hides('far', on, false), true);
 });
+
+test('price settings default to no limit and price verdict hides', () => {
+  assert.equal(G.DEFAULT_SETTINGS.priceMin, null);
+  assert.equal(G.DEFAULT_SETTINGS.priceMax, null);
+  assert.equal(G.hides('price', G.DEFAULT_SETTINGS), true);
+});
+
+test('sameFilter notices a price change', () => {
+  const a = { ...S };
+  assert.equal(G.sameFilter(a, { ...a }), true);
+  assert.equal(G.sameFilter(a, { ...a, priceMax: 100 }), false);
+});
