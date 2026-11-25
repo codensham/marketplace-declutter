@@ -26,7 +26,7 @@
   let unknownSamples = [];
 
   $('graceNote').textContent =
-    `Includes ${G.GRACE_MILES} extra miles, because Facebook's location isn't exact.`;
+    'Includes a little extra room around your area.';
 
   copyUnknown.addEventListener('click', async () => {
     const text = unknownSamples.join('\n');
