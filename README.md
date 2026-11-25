@@ -21,7 +21,7 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
 | Out of price range | Its price is below your minimum or above your maximum (blank = no limit; unreadable prices are kept) |
 | Removed keyword | Its title has one of your removed keywords, as a whole word in any case (default: "wanted", "ISO"; edit the list in the popup, or turn it off) |
-| Repeat | Facebook shows the same listing again on the page; the first copy stays (can be turned off) |
+| Duplicate listing | Facebook shows the same listing again on the page; the first copy stays (can be turned off) |
 | Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
 
 A listing is only hidden when the extension is sure. If a city is not

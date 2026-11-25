@@ -277,17 +277,8 @@
         <span class="ct" id="adCount"></span>
       </label>
       <label class="row">
-        <input type="checkbox" id="hideWords" class="eye" aria-label="Hide listings with removed keywords" />
-        <span>Removed keywords: <button type="button" class="link" id="editWords" aria-expanded="false" aria-controls="wordsBox"></button></span>
-        <span class="ct" id="wordCount"></span>
-      </label>
-      <div id="wordsBox" hidden>
-        <input type="text" id="blockWords" placeholder="wanted, ISO" aria-label="Removed keywords, separated by commas" />
-        <p class="help">Hides listings whose title has any of these keywords. Separate them with commas.</p>
-      </div>
-      <label class="row">
-        <input type="checkbox" id="hideRepeats" class="eye" aria-label="Hide repeated listings" />
-        <span title="Facebook sometimes shows the same listing twice; the first copy stays">Repeats</span>
+        <input type="checkbox" id="hideRepeats" class="eye" aria-label="Hide duplicate listings" />
+        <span title="Facebook sometimes shows the same listing twice; the first copy stays">Duplicate listings</span>
         <span class="ct" id="repeatCount"></span>
       </label>
       <label class="row">
@@ -298,6 +289,15 @@
       <div id="unknownBox" hidden>
         <ul id="unknownList"></ul>
         <button type="button" id="copyUnknown">Copy</button>
+      </div>
+      <label class="row">
+        <input type="checkbox" id="hideWords" class="eye" aria-label="Hide listings with removed keywords" />
+        <span>Removed keywords: <button type="button" class="link" id="editWords" aria-expanded="false" aria-controls="wordsBox"></button></span>
+        <span class="ct" id="wordCount"></span>
+      </label>
+      <div id="wordsBox" hidden>
+        <input type="text" id="blockWords" placeholder="wanted, ISO" aria-label="Removed keywords, separated by commas" />
+        <p class="help">Hides listings whose title has any of these keywords. Separate them with commas.</p>
       </div>
     </section>
 
