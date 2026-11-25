@@ -9,7 +9,7 @@ for: listings near you. Marketplace pads the feed with shipped items, listings
 outside your radius, and seller ads. Marketplace Declutter hides all three.
 
 <p align="center">
-  <img src="docs/images/popup-v3.png" width="300" alt="The popup: 41 listings hidden, eye buttons for distance, shipping-only, seller ads and unknown cities, and a price range" />
+  <img src="docs/images/popup-v4.png" width="300" alt="The popup: 41 listings hidden, eye buttons for distance, shipping-only, seller ads and unknown cities, and a price range, in green and cream" />
 </p>
 
 ## What it hides

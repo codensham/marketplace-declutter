@@ -42,10 +42,10 @@ for (const size of [16, 32, 48, 128]) {
 }
 
 shoot(
-  `<div style="width:440px;height:280px;box-sizing:border-box;background:#FAEEDA;display:flex;align-items:center;gap:24px;padding:0 36px;font-family:'Segoe UI',system-ui,sans-serif;color:#412402">
+  `<div style="width:440px;height:280px;box-sizing:border-box;background:#F4F1E8;display:flex;align-items:center;gap:24px;padding:0 36px;font-family:'Segoe UI',system-ui,sans-serif;color:#1F2A1F">
      <img src="${svgUrl}" width="112" height="112">
      <div><div style="font-size:30px;font-weight:600;line-height:1.15">Marketplace<br>Declutter</div>
-     <div style="margin-top:10px;font-size:16px;color:#633806">Only the listings near you.<br>Free · runs in your browser</div></div>
+     <div style="margin-top:10px;font-size:16px;color:#2F5D3A">Only the listings near you.<br>Free · runs in your browser</div></div>
    </div>`,
   440,
   280,

@@ -6,30 +6,30 @@
     <style>
       :root {
         color-scheme: light dark;
-        --amber: #ef9f27;
-        --brown: #412402;
-        --brown-2: #633806;
-        --cream: #faeeda;
-        --text: #1c1e21;
-        --muted: #65676b;
-        --line: #e4e6eb;
-        --surface: #ffffff;
-        --hero-bg: var(--cream);
-        --hero-fg: var(--brown);
-        --hero-fg-2: var(--brown-2);
+        --accent: #2f5d3a;
+        --on-accent: #f4f1e8;
+        --text: #1f2a1f;
+        --muted: #6b7565;
+        --line: #ddd8c8;
+        --surface: #f4f1e8;
+        --hero-bg: #2f5d3a;
+        --hero-fg: #f4f1e8;
+        --hero-fg-2: #dfe8d9;
         --eye: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'/><circle cx='12' cy='12' r='3'/></svg>");
         --eye-off: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'/><circle cx='12' cy='12' r='3'/><path d='M3 3l18 18'/></svg>");
         --power: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M12 3v8'/><path d='M6.3 7.5a8 8 0 1 0 11.4 0'/></svg>");
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --text: #e4e6eb;
-          --muted: #b0b3b8;
-          --line: #3e4042;
-          --surface: #242526;
-          --hero-bg: #412402;
-          --hero-fg: #fac775;
-          --hero-fg-2: #faeeda;
+          --accent: #8fc79a;
+          --on-accent: #10241a;
+          --text: #e8ede6;
+          --muted: #9db09a;
+          --line: #2c3b30;
+          --surface: #16201a;
+          --hero-bg: #24432c;
+          --hero-fg: #f4f1e8;
+          --hero-fg-2: #cfdccb;
         }
       }
       body {
@@ -40,7 +40,7 @@
         font: 13px/1.4 system-ui, sans-serif;
       }
       :focus-visible {
-        outline: 2px solid var(--amber);
+        outline: 2px solid var(--accent);
         outline-offset: 2px;
       }
       header {
@@ -95,12 +95,12 @@
       }
       .power:checked,
       .eye:checked {
-        border-color: var(--amber);
-        background: var(--amber);
+        border-color: var(--accent);
+        background: var(--accent);
       }
       .power:checked::after,
       .eye:checked::after {
-        background: var(--brown);
+        background: var(--on-accent);
       }
       .eye:checked::after {
         -webkit-mask-image: var(--eye-off);
