@@ -35,7 +35,7 @@
     '[data-mlf-hidden]{display:none!important}' +
     '[data-mlf-badge-host]{position:relative}' +
     '[data-mlf-badge]{position:absolute;top:6px;left:6px;z-index:1;display:flex;gap:4px;align-items:center;' +
-    'padding:2px 7px;border-radius:10px;background:#0f6e56;color:#fff;font:600 11px/16px system-ui,sans-serif;' +
+    'padding:2px 7px;border-radius:10px;background:#EF9F27;color:#412402;font:600 11px/16px system-ui,sans-serif;' +
     'pointer-events:none}' +
     '[data-mlf-badge] svg{width:12px;height:12px}';
   document.documentElement.appendChild(style);
@@ -326,6 +326,7 @@
       ship: count('ship'),
       far: count('far'),
       price: count('price'),
+      hidden: document.querySelectorAll('[data-mlf-hidden]').length,
       unknown: count('unknown'),
       unknownSamples: G.unknownSamples(
         [...document.querySelectorAll('[data-mlf="unknown"]')].map((c) => c.getAttribute('data-mlf-loc')),

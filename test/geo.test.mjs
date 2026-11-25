@@ -275,3 +275,10 @@ test('sameFilter notices a price change', () => {
   assert.equal(G.sameFilter(a, { ...a }), true);
   assert.equal(G.sameFilter(a, { ...a, priceMax: 100 }), false);
 });
+
+test('hideFar off keeps far cards visible', () => {
+  assert.equal(G.DEFAULT_SETTINGS.hideFar, true);
+  assert.equal(G.hides('far', G.DEFAULT_SETTINGS), true);
+  assert.equal(G.hides('far', { ...G.DEFAULT_SETTINGS, hideFar: false }), false);
+  assert.equal(G.sameFilter(S, { ...S, hideFar: false }), false);
+});
