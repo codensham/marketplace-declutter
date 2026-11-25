@@ -128,6 +128,15 @@
     }
     if (syncFacebookLocation()) return reset(); // location changed: re-judge every card
 
+    // Listing id -> the card showing it. A card for a listing that another
+    // card already shows is a repeat.
+    const shown = new Map();
+    for (const cell of document.querySelectorAll('[data-mlf-id]:not([data-mlf-hidden])')) {
+      const id = cell.getAttribute('data-mlf-id');
+      if (!shown.has(id)) shown.set(id, cell);
+    }
+    releaseOrphanRepeats(shown);
+
     // Read everything first, then write. Hiding a card between reads would
     // make the browser redo layout for every card measured after it.
     // An anchor is marked seen, with its listing's id, once its card has a
@@ -173,7 +182,9 @@
     let hid = 0;
     let fresh = 0;
     let pending = 0; // unknown cards with re-checks left
-    for (const [cell, { id, verdict, loc, tries, isNew, anchors }] of judged) {
+    for (const [cell, entry] of judged) {
+      const { id, loc, tries, isNew, anchors } = entry;
+      const verdict = L.withRepeat(entry.verdict, shown.has(id) && shown.get(id) !== cell, active);
       cell.setAttribute('data-mlf-id', id);
       cell.setAttribute('data-mlf', verdict);
       cell.setAttribute('data-mlf-loc', loc);
@@ -192,6 +203,7 @@
         hid++;
       } else {
         cell.removeAttribute('data-mlf-hidden');
+        if (!shown.has(id)) shown.set(id, cell);
       }
     }
 
@@ -201,6 +213,16 @@
     // A quiet page triggers no further passes, so come back for the
     // remaining re-checks rather than waiting for the next page change.
     if (pending) setTimeout(schedule, RECHECK_MS);
+  }
+
+  // A hidden repeat whose original has left the page (Facebook re-rendered or
+  // dropped it) is judged afresh, so the listing is not lost from the feed.
+  function releaseOrphanRepeats(shown) {
+    for (const cell of document.querySelectorAll('[data-mlf="repeat"]')) {
+      if (shown.has(cell.getAttribute('data-mlf-id'))) continue;
+      for (const name of ['data-mlf', 'data-mlf-hidden', 'data-mlf-id', 'data-mlf-seen']) cell.removeAttribute(name);
+      for (const a of cell.querySelectorAll('[data-mlf-seen]')) a.removeAttribute('data-mlf-seen');
+    }
   }
 
   // A listing open in this page (its own page or Facebook's overlay over the
@@ -332,6 +354,7 @@
       far: count('far'),
       price: count('price'),
       word: count('word'),
+      repeat: count('repeat'),
       hidden: document.querySelectorAll('[data-mlf-hidden]').length,
       unknown: count('unknown'),
       unknownSamples: G.unknownSamples(

@@ -293,3 +293,12 @@ test('decideCard treats partner listings as shipping-only', () => {
   assert.equal(G.decideCard(['Partner listing', '$5', 'Tin', 'Dallas, TX'], { ...S, hideShipping: false }, table), 'far');
   assert.equal(G.decideCard(['$50', 'Oak desk', 'Dallas, TX'], S, table), 'far');
 });
+
+test('hides repeats', () => {
+  assert.equal(G.hides('repeat', {}), true);
+});
+
+test('sameFilter sees hideRepeats', () => {
+  const a = { ...G.DEFAULT_SETTINGS };
+  assert.equal(G.sameFilter(a, { ...a, hideRepeats: false }), false);
+});

@@ -103,3 +103,18 @@ test('withWords hides kept cards with a blocked word, but not by their city', ()
   assert.equal(L.withWords('keep', card, 'Austin, TX', { ...S, blockWords: [] }), 'keep');
   assert.equal(L.withWords('keep', ['$5', 'Lamp', 'Wanted, TX'], 'Wanted, TX', S), 'keep');
 });
+
+test('withRepeat hides a kept card already shown elsewhere', () => {
+  const S = { hideRepeats: true };
+  assert.equal(L.withRepeat('keep', true, S), 'repeat');
+  assert.equal(L.withRepeat('unknown', true, S), 'repeat');
+  assert.equal(L.withRepeat('keep', true, { hideRepeats: false }), 'keep');
+});
+
+test('withRepeat keeps a card whose only shown copy is itself', () => {
+  assert.equal(L.withRepeat('keep', false, { hideRepeats: true }), 'keep');
+});
+
+test('withRepeat leaves other verdicts alone', () => {
+  for (const v of ['far', 'ad', 'ship', 'price', 'word']) assert.equal(L.withRepeat(v, true, { hideRepeats: true }), v);
+});
