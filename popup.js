@@ -7,8 +7,6 @@
   const hideShipping = $('hideShipping');
   const hideAds = $('hideAds');
   const hideUnknown = $('hideUnknown');
-  const cutExact = $('cutExact');
-  const cutGrace = $('cutGrace');
   const priceMin = $('priceMin');
   const priceMax = $('priceMax');
   const priceHint = $('priceHint');
@@ -27,11 +25,8 @@
   const farList = $('farList');
   let unknownSamples = [];
 
-  $('graceLabel').textContent = `+${G.GRACE_MILES} mi`;
-  $('cutoff').title =
-    `Facebook's location isn't 100% accurate, and distances here are straight ` +
-    `lines between town centres. "+${G.GRACE_MILES} mi" (recommended) keeps towns ` +
-    `up to ${G.GRACE_MILES} miles past your radius; "Exact" cuts off at the radius.`;
+  $('graceNote').textContent =
+    `Includes ${G.GRACE_MILES} extra miles, because Facebook's location isn't exact.`;
 
   copyUnknown.addEventListener('click', async () => {
     const text = unknownSamples.join('\n');
@@ -66,8 +61,6 @@
     hideShipping.checked = settings.hideShipping;
     hideAds.checked = settings.hideAds;
     hideUnknown.checked = settings.hideUnknown;
-    cutGrace.checked = settings.grace;
-    cutExact.checked = !settings.grace;
     priceMin.value = settings.priceMin ?? '';
     priceMax.value = settings.priceMax ?? '';
     source.textContent = fbLocation
@@ -87,8 +80,6 @@
   hideShipping.addEventListener('change', () => save({ hideShipping: hideShipping.checked }));
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
-  cutExact.addEventListener('change', () => save({ grace: false }));
-  cutGrace.addEventListener('change', () => save({ grace: true }));
 
   // Saved as a pair, while typing: the popup closes the moment the user
   // clicks back on the page, often before the field loses focus. A minimum

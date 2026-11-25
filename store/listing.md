@@ -69,7 +69,7 @@ Hides Facebook Marketplace listings that are outside the user's chosen radius, s
 
 | Permission | Justification |
 | --- | --- |
-| `storage` | Saves the user's settings (on/off, the 15-mile grace margin, which listing types to hide) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
+| `storage` | Saves the user's settings (on/off, which listing types to hide, the price range) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
 | `activeTab` | When the user opens the popup, reads the current tab's address to tell them whether they are on Marketplace and whether the tab needs refreshing before filtering can start. |
 | Host permission (`https://www.facebook.com/*`, via content script) | The content script runs on Facebook Marketplace pages to read each listing card's location line and Marketplace's location filter, and to hide listings that are out of range, shipping-only, or seller ads. It does nothing on other Facebook pages. |
 

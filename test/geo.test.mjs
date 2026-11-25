@@ -135,20 +135,19 @@ test('effectiveSettings ignores a city saved by an older version', () => {
   assert.equal(G.effectiveSettings(old, fb, table).source, 'facebook');
 });
 
-test('grace is on by default and adds GRACE_MILES to the radius', () => {
-  assert.equal(G.DEFAULT_SETTINGS.grace, true);
+test('the 15-mile margin is always added, whatever an old setting says', () => {
+  assert.equal('grace' in G.DEFAULT_SETTINGS, false);
   assert.equal(G.GRACE_MILES, 15);
-  assert.equal(G.limitMiles({ radiusMiles: 40, grace: true }), 55);
-  assert.equal(G.limitMiles({ radiusMiles: 40, grace: false }), 40);
+  assert.equal(G.limitMiles({ radiusMiles: 40 }), 55);
+  assert.equal(G.limitMiles({ radiusMiles: 40, grace: false }), 55);
 });
 
 test('decide keeps a city inside the grace margin and hides one past it', () => {
-  // Round Rock is ~17 mi from Austin.
-  const near = { ...S, radiusMiles: 10 };
-  assert.equal(G.decide('Round Rock, TX', { ...near, grace: true }, table), 'keep');
-  assert.equal(G.decide('Round Rock, TX', { ...near, grace: false }, table), 'far');
-  // Dallas is ~180 mi away: hidden either way.
-  assert.equal(G.decide('Dallas, TX', { ...near, grace: true }, table), 'far');
+  // Round Rock is ~17 mi from Austin: inside 10 + 15, outside 1 + 15.
+  assert.equal(G.decide('Round Rock, TX', { ...S, radiusMiles: 10 }, table), 'keep');
+  assert.equal(G.decide('Round Rock, TX', { ...S, radiusMiles: 1, grace: false }, table), 'far');
+  // Dallas is ~180 mi away.
+  assert.equal(G.decide('Dallas, TX', { ...S, radiusMiles: 10 }, table), 'far');
 });
 
 test('sameFilter compares what decides a card', () => {
@@ -158,7 +157,6 @@ test('sameFilter compares what decides a card', () => {
   assert.equal(G.sameFilter(a, { ...a, center: [30, -97] }), false);
   assert.equal(G.sameFilter(a, { ...a, center: null }), false);
   assert.equal(G.sameFilter(a, { ...a, hideAds: false }), false);
-  assert.equal(G.sameFilter(a, { ...a, grace: !a.grace }), false);
   assert.equal(G.sameFilter(null, a), false);
 });
 

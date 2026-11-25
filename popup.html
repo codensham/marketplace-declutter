@@ -144,38 +144,10 @@
         font-size: 12px;
         white-space: nowrap;
       }
-      .sub {
-        display: flex;
-        align-items: center;
-        min-height: 32px;
-        padding-left: 38px;
+      .note {
+        margin: 0 0 2px 38px;
         color: var(--muted);
-      }
-      .seg {
-        display: inline-flex;
-        margin-left: auto;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .seg input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-      }
-      .seg label {
-        padding: 3px 10px;
-        color: var(--text);
         font-size: 12px;
-        cursor: pointer;
-      }
-      .seg input:checked + label {
-        background: var(--amber);
-        color: var(--brown);
-      }
-      .seg input:focus-visible + label {
-        outline: 2px solid var(--amber);
-        outline-offset: -2px;
       }
       .price {
         display: flex;
@@ -278,15 +250,7 @@
       <div id="farBox" hidden>
         <ul id="farList"></ul>
       </div>
-      <div class="sub">
-        <span>Cut-off</span>
-        <div class="seg" role="radiogroup" aria-label="Distance cut-off" id="cutoff">
-          <input type="radio" name="cutoff" id="cutExact" />
-          <label for="cutExact">Exact</label>
-          <input type="radio" name="cutoff" id="cutGrace" />
-          <label for="cutGrace" id="graceLabel"></label>
-        </div>
-      </div>
+      <p class="note" id="graceNote"></p>
     </section>
 
     <section class="sec" aria-labelledby="listLbl">
