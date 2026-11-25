@@ -23,6 +23,8 @@
   const wordsBox = $('wordsBox');
   const blockWords = $('blockWords');
   const wordCount = $('wordCount');
+  const hideRepeats = $('hideRepeats');
+  const repeatCount = $('repeatCount');
   const unknownBox = $('unknownBox');
   const unknownList = $('unknownList');
   const copyUnknown = $('copyUnknown');
@@ -69,6 +71,7 @@
     priceMin.value = settings.priceMin ?? '';
     priceMax.value = settings.priceMax ?? '';
     hideWords.checked = settings.hideWords;
+    hideRepeats.checked = settings.hideRepeats;
     editWords.textContent = settings.blockWords.length ? settings.blockWords.join(', ') : 'add words';
     // Not while typing: rewriting the field would move the cursor.
     if (document.activeElement !== blockWords) blockWords.value = settings.blockWords.join(', ');
@@ -90,6 +93,7 @@
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
   hideWords.addEventListener('change', () => save({ hideWords: hideWords.checked }));
+  hideRepeats.addEventListener('change', () => save({ hideRepeats: hideRepeats.checked }));
 
   // The word list opens under its row. The button sits inside the row's
   // label, so its click must not also flip the row's eye.
@@ -201,6 +205,7 @@
       adCount.textContent = countText(c.ad, true);
       priceCount.textContent = countText(c.price ?? 0, true);
       wordCount.textContent = countText(c.word ?? 0, true);
+      repeatCount.textContent = countText(c.repeat ?? 0, true);
 
       unknownSamples = c.unknownSamples ?? [];
       showList(
@@ -218,7 +223,7 @@
       lastCounts = null;
       unknownBox.hidden = true;
       farBox.hidden = true;
-      for (const el of [farCount, shipCount, adCount, unknownCount, priceCount, wordCount]) el.textContent = '';
+      for (const el of [farCount, shipCount, adCount, unknownCount, priceCount, wordCount, repeatCount]) el.textContent = '';
       total.textContent = '–';
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.

@@ -286,6 +286,11 @@
         <p class="help">Hides listings whose title has any of these words. Separate them with commas.</p>
       </div>
       <label class="row">
+        <input type="checkbox" id="hideRepeats" class="eye" aria-label="Hide repeated listings" />
+        <span title="Facebook sometimes shows the same listing twice; the first copy stays">Repeats</span>
+        <span class="ct" id="repeatCount"></span>
+      </label>
+      <label class="row">
         <input type="checkbox" id="hideUnknown" class="eye" aria-label="Hide listings with an unknown city" />
         <span>Unknown cities</span>
         <span class="ct" id="unknownCount"></span>

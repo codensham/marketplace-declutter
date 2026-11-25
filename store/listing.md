@@ -19,6 +19,7 @@ Facebook Marketplace lets you set a location and radius, then fills your feed wi
 WHAT IT HIDES
 • Listings whose city is farther away than your radius
 • Shipping-only listings ("Ships to you") and eBay partner listings – can be turned off
+• Listings Facebook shows twice – the extra copy is hidden
 • "Wanted" and "ISO" posts, or any words you add – can be turned off
 • Ads from sellers – can be turned off
 • Listings whose city can't be placed – only if you turn this on
