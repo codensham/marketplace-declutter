@@ -6,6 +6,7 @@ scripts/raw/
 .claude/
 .superpowers/
 docs/superpowers/
+docs/design.md
 .playwright-mcp/
 CLAUDE.local.md
 .cursor/

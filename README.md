@@ -86,8 +86,7 @@ Full details are in the [privacy policy](PRIVACY.md).
 | `scripts/build-places.mjs` | Regenerates the city table (development only) |
 | `scripts/build-aliases.mjs` | Regenerates the aliases from GeoNames plus `scripts/manual-aliases.json` |
 
-There is no build step and no runtime dependency. The reasoning behind the
-design is in [docs/design.md](docs/design.md).
+There is no build step and no runtime dependency.
 
 ## Development
 
