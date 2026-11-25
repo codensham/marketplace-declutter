@@ -118,3 +118,24 @@ test('withRepeat keeps a card whose only shown copy is itself', () => {
 test('withRepeat leaves other verdicts alone', () => {
   for (const v of ['far', 'ad', 'ship', 'price', 'word']) assert.equal(L.withRepeat(v, true, { hideRepeats: true }), v);
 });
+
+test('shownCopies picks the first visible card still showing each listing', () => {
+  const a = { id: '1', linkIds: ['1'], hidden: false };
+  const b = { id: '1', linkIds: ['1'], hidden: false };
+  const c = { id: '2', linkIds: ['2'], hidden: false };
+  const m = L.shownCopies([a, b, c]);
+  assert.equal(m.get('1'), a);
+  assert.equal(m.get('2'), c);
+});
+
+test('shownCopies skips cards hidden themselves or inside a hidden card', () => {
+  const inner = { id: '1', linkIds: ['1'], hidden: true };
+  const other = { id: '1', linkIds: ['1'], hidden: false };
+  assert.equal(L.shownCopies([inner, other]).get('1'), other);
+});
+
+test('shownCopies skips a card Facebook reused for another listing', () => {
+  const reused = { id: '1', linkIds: ['2'], hidden: false };
+  assert.equal(L.shownCopies([reused]).has('1'), false);
+  assert.equal(L.shownCopies([{ id: '1', linkIds: [], hidden: false }]).has('1'), false);
+});

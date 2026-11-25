@@ -131,10 +131,13 @@
     // Listing id -> the card showing it. A card for a listing that another
     // card already shows is a repeat.
     const shown = new Map();
-    for (const cell of document.querySelectorAll('[data-mlf-id]:not([data-mlf-hidden])')) {
-      const id = cell.getAttribute('data-mlf-id');
-      if (!shown.has(id)) shown.set(id, cell);
-    }
+    const cards = [...document.querySelectorAll('[data-mlf-id]')].map((cell) => ({
+      cell,
+      id: cell.getAttribute('data-mlf-id'),
+      linkIds: [...cell.querySelectorAll(ITEM)].map(itemId),
+      hidden: Boolean(cell.closest('[data-mlf-hidden]')),
+    }));
+    for (const [id, card] of L.shownCopies(cards)) shown.set(id, card.cell);
     releaseOrphanRepeats(shown);
 
     // Read everything first, then write. Hiding a card between reads would
@@ -184,7 +187,10 @@
     let pending = 0; // unknown cards with re-checks left
     for (const [cell, entry] of judged) {
       const { id, loc, tries, isNew, anchors } = entry;
-      const verdict = L.withRepeat(entry.verdict, shown.has(id) && shown.get(id) !== cell, active);
+      // Nested cards of one listing are the same card, not a repeat.
+      const original = shown.get(id);
+      const elsewhere = Boolean(original) && !original.contains(cell) && !cell.contains(original);
+      const verdict = L.withRepeat(entry.verdict, elsewhere, active);
       cell.setAttribute('data-mlf-id', id);
       cell.setAttribute('data-mlf', verdict);
       cell.setAttribute('data-mlf-loc', loc);
@@ -208,6 +214,10 @@
     }
 
     syncBadges();
+    // Hiding a card or reusing one for another listing can leave a repeat
+    // without its original. Attribute changes don't wake the observer, so
+    // look again; the next pass releases such repeats or changes nothing.
+    if (hid && document.querySelector('[data-mlf="repeat"]')) schedule();
     if (fresh) nudges = 0;
     if (hid) nudgeIfShort();
     // A quiet page triggers no further passes, so come back for the
@@ -220,7 +230,7 @@
   function releaseOrphanRepeats(shown) {
     for (const cell of document.querySelectorAll('[data-mlf="repeat"]')) {
       if (shown.has(cell.getAttribute('data-mlf-id'))) continue;
-      for (const name of ['data-mlf', 'data-mlf-hidden', 'data-mlf-id', 'data-mlf-seen']) cell.removeAttribute(name);
+      for (const name of ['data-mlf', 'data-mlf-hidden', 'data-mlf-id', 'data-mlf-loc', 'data-mlf-seen']) cell.removeAttribute(name);
       for (const a of cell.querySelectorAll('[data-mlf-seen]')) a.removeAttribute('data-mlf-seen');
     }
   }
