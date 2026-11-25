@@ -9,12 +9,12 @@ Upload file: run `npm run package` and upload `dist/marketplace-declutter-<versi
 
 **Summary** (from the manifest `description`, 132 characters max):
 
-> Hides Facebook Marketplace listings that are outside your radius, shipping-only, or seller ads.
+> Hides Facebook Marketplace listings outside your radius, shipping-only and eBay items, duplicates, seller ads and keywords you pick.
 
 **Description:**
 
 ```
-Facebook Marketplace lets you set a location and radius, then fills your feed with listings that ship from across the country, listings far outside your radius, and ads from sellers. Marketplace Declutter hides them, so you see what you can actually go and pick up.
+Facebook Marketplace lets you set a location and radius, then fills your feed with listings that ship from across the country, eBay listings, listings far outside your radius, the same listing shown twice, and ads from sellers. Marketplace Declutter hides them, so you see what you can actually go and pick up.
 
 WHAT IT HIDES
 • Listings whose city is farther away than your radius
@@ -25,10 +25,14 @@ WHAT IT HIDES
 • Listings whose city can't be placed – only if you turn this on
 
 NO SETUP NEEDED
-The extension uses the location and radius you already set in Marketplace's own location filter. Because Facebook's location isn't exact, towns up to 15 miles past your radius are kept by default; you can turn that off in the popup.
+The extension uses the location and radius you already set in Marketplace's own location filter. Because Facebook's location isn't exact, towns up to 15 miles past your radius are always kept.
 
 SEE WHAT WAS HIDDEN
-The popup shows how many listings were hidden on the current page and why. Listings with a city the extension doesn't recognise are always left visible.
+The popup shows how many listings were hidden on the current page and why, with an on/off switch for each reason. Open the distance count to see each out-of-range town. Listings with a city the extension doesn't recognise are left visible unless you choose to hide them.
+
+MORE
+• Set a price range to hide listings outside it
+• Listings you've opened get a "Viewed" badge, stored only in your browser
 
 PRIVATE BY DESIGN
 • Everything runs in your browser
@@ -64,16 +68,16 @@ Marketplace Declutter is an independent project and is not affiliated with, endo
 **Single purpose:**
 
 ```
-Hides Facebook Marketplace listings that are outside the user's chosen radius, shipping-only, or ads from sellers, so the feed shows only local listings.
+Hides Facebook Marketplace listings the user can't or doesn't want to pick up locally (outside their radius, shipping-only or eBay partner listings, duplicates, seller ads, outside their price range, or with keywords they chose), so the feed shows only local listings.
 ```
 
 **Permission justifications:**
 
 | Permission | Justification |
 | --- | --- |
-| `storage` | Saves the user's settings (on/off, which listing types to hide, the price range) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
+| `storage` | Saves the user's settings (on/off, which listing types to hide, the price range, the keywords to hide) and the last location read from Marketplace's location filter, so the next page is filtered immediately. |
 | `activeTab` | When the user opens the popup, reads the current tab's address to tell them whether they are on Marketplace and whether the tab needs refreshing before filtering can start. |
-| Host permission (`https://www.facebook.com/*`, via content script) | The content script runs on Facebook Marketplace pages to read each listing card's location line and Marketplace's location filter, and to hide listings that are out of range, shipping-only, or seller ads. It does nothing on other Facebook pages. |
+| Host permission (`https://www.facebook.com/*`, via content script) | The content script runs on Facebook Marketplace pages to read each listing card's location line and Marketplace's location filter, and to hide listings that are out of range, shipping-only, duplicates, seller ads, or match the user's keywords. It does nothing on other Facebook pages. |
 
 **Are you using remote code?** No, I am not using remote code.
 
@@ -98,6 +102,8 @@ contact email first.
 ## Before each submission
 
 1. Raise `version` in `manifest.json`.
+   If the popup changed, run `node scripts/render-store.mjs` to redraw the
+   screenshots and the README image.
 2. `npm test`
 3. `npm run package`
 4. Load the unzipped `dist` build as an unpacked extension and check a live

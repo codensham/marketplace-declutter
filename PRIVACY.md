@@ -36,9 +36,10 @@ deciding whether to hide them or mark them as viewed.
 
 Using the browser's extension storage, the extension saves:
 
-- your settings: whether it is on, whether to allow a 15-mile margin past
-  the radius, and whether to hide shipping-only listings, seller ads, and
-  listings with an unknown city, and the price range you set;
+- your settings: whether it is on; whether to hide listings outside your
+  area, shipping-only listings, seller ads, duplicate listings, listings with
+  an unknown city, and listings with your removed keywords; the keywords
+  themselves; and the price range you set;
 - the last location and radius read from Marketplace's location filter, so
   the next page can be filtered without waiting for it;
 - the numbers of listings you have opened, each with the day you last opened
