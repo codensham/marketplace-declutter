@@ -6,171 +6,215 @@
     <style>
       :root {
         color-scheme: light dark;
+        --amber: #ef9f27;
+        --brown: #412402;
+        --brown-2: #633806;
+        --cream: #faeeda;
+        --text: #1c1e21;
         --muted: #65676b;
-        --line: #ced0d4;
-        --error: #c0392b;
-        --surface: #fff;
-        --active: #e1f5ee;
-        --brand: #0f6e56;
-        --on: #1d9e75;
-        --off: #b0b3b8;
+        --line: #e4e6eb;
+        --surface: #ffffff;
+        --hero-bg: var(--cream);
+        --hero-fg: var(--brown);
+        --hero-fg-2: var(--brown-2);
+        --eye: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'/><circle cx='12' cy='12' r='3'/></svg>");
+        --eye-off: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z'/><circle cx='12' cy='12' r='3'/><path d='M3 3l18 18'/></svg>");
+        --power: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'><path d='M12 3v8'/><path d='M6.3 7.5a8 8 0 1 0 11.4 0'/></svg>");
       }
       @media (prefers-color-scheme: dark) {
         :root {
+          --text: #e4e6eb;
           --muted: #b0b3b8;
           --line: #3e4042;
-          --error: #ff6b5e;
           --surface: #242526;
-          --active: #1d4a3f;
-          --brand: #5dcaa5;
-          --off: #5a5c5f;
+          --hero-bg: #412402;
+          --hero-fg: #fac775;
+          --hero-fg-2: #faeeda;
         }
       }
       body {
-        width: 280px;
+        width: 340px;
         margin: 0;
-        padding: 14px;
+        background: var(--surface);
+        color: var(--text);
         font: 13px/1.4 system-ui, sans-serif;
+      }
+      :focus-visible {
+        outline: 2px solid var(--amber);
+        outline-offset: 2px;
       }
       header {
         display: flex;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 14px;
+        gap: 10px;
+        padding: 12px 16px;
       }
       header img {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
       }
       h1 {
         flex: 1;
         margin: 0;
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 600;
       }
-      /* The on/off switch is a checkbox, so popup.js reads it as before. */
-      .switch {
+      /* Checkboxes drawn as buttons; popup.js reads .checked as before. */
+      .power,
+      .eye {
         appearance: none;
         position: relative;
         flex: none;
-        width: 32px;
-        height: 18px;
         margin: 0;
-        border-radius: 9px;
-        background: var(--off);
+        border: 1px solid var(--line);
+        background: transparent;
         cursor: pointer;
-        transition: background 0.15s;
       }
-      .switch::after {
+      .power {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
+      .eye {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+      .power::after,
+      .eye::after {
         content: '';
         position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #fff;
-        transition: transform 0.15s;
+        inset: 6px;
+        background: var(--muted);
+        -webkit-mask: var(--eye) center / contain no-repeat;
+        mask: var(--eye) center / contain no-repeat;
       }
-      .switch:checked {
-        background: var(--on);
+      .power::after {
+        -webkit-mask-image: var(--power);
+        mask-image: var(--power);
       }
-      .switch:checked::after {
-        transform: translateX(14px);
+      .power:checked,
+      .eye:checked {
+        border-color: var(--amber);
+        background: var(--amber);
       }
-      :focus-visible {
-        outline: 2px solid var(--on);
-        outline-offset: 1px;
+      .power:checked::after,
+      .eye:checked::after {
+        background: var(--brown);
       }
-      .source {
+      .eye:checked::after {
+        -webkit-mask-image: var(--eye-off);
+        mask-image: var(--eye-off);
+      }
+      .hero {
         display: flex;
-        align-items: flex-start;
-        gap: 5px;
-        color: var(--muted);
-      }
-      .source svg {
-        flex: none;
-        width: 14px;
-        height: 14px;
-        margin-top: 2px;
-        color: var(--brand);
-      }
-      button {
-        margin-top: 8px;
-        padding: 5px 10px;
-        border: 1px solid var(--line);
-        border-radius: 6px;
-        background: transparent;
-        color: inherit;
-        font: inherit;
-        cursor: pointer;
-      }
-      .grace {
-        display: flex;
-        align-items: center;
+        align-items: baseline;
         gap: 6px;
+        margin: 0 16px 12px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: var(--hero-bg);
+        color: var(--hero-fg-2);
       }
-      .info {
-        flex: none;
-        width: 18px;
-        height: 18px;
-        margin: 0;
-        padding: 0;
-        border-radius: 50%;
-        font-size: 11px;
-        line-height: 16px;
-        color: var(--muted);
+      #total {
+        color: var(--hero-fg);
+        font-size: 26px;
+        font-weight: 600;
+        line-height: 1;
       }
-      .help {
-        margin: 4px 0 2px 23px;
-        color: var(--muted);
-      }
-      hr {
-        margin: 12px 0;
-        border: 0;
+      .sec {
+        padding: 10px 16px;
         border-top: 1px solid var(--line);
       }
-      label.check {
+      .lbl {
+        margin: 0 0 4px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .row {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 3px 0;
+        gap: 10px;
+        min-height: 36px;
         cursor: pointer;
       }
-      label.check input {
-        width: 15px;
-        height: 15px;
-        margin: 0;
-        accent-color: var(--on);
+      .ct {
+        margin-left: auto;
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .sub {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+        padding-left: 38px;
+        color: var(--muted);
+      }
+      .seg {
+        display: inline-flex;
+        margin-left: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .seg input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .seg label {
+        padding: 3px 10px;
+        color: var(--text);
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .seg input:checked + label {
+        background: var(--amber);
+        color: var(--brown);
+      }
+      .seg input:focus-visible + label {
+        outline: 2px solid var(--amber);
+        outline-offset: -2px;
       }
       .price {
         display: flex;
         align-items: center;
         gap: 6px;
-        padding: 3px 0;
       }
       .price input {
         width: 70px;
-        padding: 3px 6px;
+        min-width: 0;
+        padding: 4px 6px;
         border: 1px solid var(--line);
         border-radius: 6px;
         background: transparent;
         color: inherit;
         font: inherit;
       }
-      #counts {
+      .help {
+        margin: 6px 0 0;
         color: var(--muted);
       }
+      button {
+        padding: 4px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
       .link {
-        margin: 0;
         padding: 0;
         border: 0;
         color: inherit;
+        font-size: inherit;
         text-decoration: underline dotted;
       }
       #unknownBox,
       #farBox {
-        margin-top: 6px;
+        margin: 2px 0 4px 38px;
         color: var(--muted);
       }
       #unknownList,
@@ -189,13 +233,26 @@
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
       }
-      #copyUnknown {
-        margin-top: 0;
+      body.off .hero,
+      body.off .sec {
+        opacity: 0.5;
       }
       footer {
-        margin-top: 10px;
-        font-size: 11px;
+        padding: 10px 16px;
+        border-top: 1px solid var(--line);
         color: var(--muted);
+        font-size: 11px;
+      }
+      footer .privacy {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 2px;
+        font-size: 12px;
+      }
+      footer svg {
+        width: 13px;
+        height: 13px;
       }
     </style>
   </head>
@@ -203,49 +260,79 @@
     <header>
       <img src="icons/icon48.png" alt="" />
       <h1>Marketplace Declutter</h1>
-      <input type="checkbox" id="enabled" class="switch" role="switch" aria-label="Enabled" />
+      <input type="checkbox" id="enabled" class="power" role="switch" aria-label="Filtering on" title="Turn filtering on or off" />
     </header>
 
-    <div class="source">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" stroke-linejoin="round" />
-        <circle cx="12" cy="10" r="2.5" />
-      </svg>
-      <span id="source"></span>
+    <div class="hero" role="status">
+      <span id="total">–</span>
+      <span id="heroText">Open Facebook Marketplace to see counts</span>
     </div>
 
-    <hr />
-
-    <label class="check"><input type="checkbox" id="hideShipping" /> Hide shipping-only</label>
-    <label class="check"><input type="checkbox" id="hideAds" /> Hide ads from sellers</label>
-    <label class="check"><input type="checkbox" id="hideUnknown" /> Hide unknown cities</label>
-    <div class="grace">
-      <label class="check" title="Recommended: Facebook's location isn't 100% accurate">
-        <input type="checkbox" id="grace" /> <span id="graceLabel"></span>
+    <section class="sec" aria-labelledby="areaLbl">
+      <p class="lbl" id="areaLbl">Area · from Facebook</p>
+      <label class="row">
+        <input type="checkbox" id="hideFar" class="eye" aria-label="Hide listings outside your area" />
+        <span id="source"></span>
+        <span class="ct" id="farCount"></span>
       </label>
-      <button type="button" id="graceInfo" class="info" aria-label="What is this?" aria-expanded="false" aria-controls="graceHelp">?</button>
-    </div>
-    <p id="graceHelp" class="help" hidden></p>
-    <div class="price">
-      <label for="priceMin">Price</label>
-      <input type="number" id="priceMin" min="0" step="1" placeholder="Min" inputmode="numeric" />
-      <span>to</span>
-      <input type="number" id="priceMax" min="0" step="1" placeholder="Max" inputmode="numeric" aria-label="Maximum price" />
-    </div>
-    <p id="priceHint" class="help" role="status" hidden>Min is above max. Fix one to apply the range.</p>
+      <div id="farBox" hidden>
+        <ul id="farList"></ul>
+      </div>
+      <div class="sub">
+        <span>Cut-off</span>
+        <div class="seg" role="radiogroup" aria-label="Distance cut-off" id="cutoff">
+          <input type="radio" name="cutoff" id="cutExact" />
+          <label for="cutExact">Exact</label>
+          <input type="radio" name="cutoff" id="cutGrace" />
+          <label for="cutGrace" id="graceLabel"></label>
+        </div>
+      </div>
+    </section>
 
-    <hr />
+    <section class="sec" aria-labelledby="listLbl">
+      <p class="lbl" id="listLbl">Listings</p>
+      <label class="row">
+        <input type="checkbox" id="hideShipping" class="eye" aria-label="Hide shipping-only listings" />
+        <span>Shipping-only</span>
+        <span class="ct" id="shipCount"></span>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="hideAds" class="eye" aria-label="Hide seller ads" />
+        <span>Seller ads</span>
+        <span class="ct" id="adCount"></span>
+      </label>
+      <label class="row">
+        <input type="checkbox" id="hideUnknown" class="eye" aria-label="Hide listings with an unknown city" />
+        <span>Unknown cities</span>
+        <span class="ct" id="unknownCount"></span>
+      </label>
+      <div id="unknownBox" hidden>
+        <ul id="unknownList"></ul>
+        <button type="button" id="copyUnknown">Copy</button>
+      </div>
+    </section>
 
-    <div id="counts"></div>
-    <div id="farBox" hidden>
-      <ul id="farList"></ul>
-    </div>
-    <div id="unknownBox" hidden>
-      <ul id="unknownList"></ul>
-      <button type="button" id="copyUnknown">Copy</button>
-    </div>
+    <section class="sec" aria-labelledby="priceLbl">
+      <p class="lbl" id="priceLbl">Price</p>
+      <div class="price">
+        <input type="number" id="priceMin" min="0" step="1" placeholder="$ min" inputmode="numeric" aria-label="Minimum price" />
+        <span>to</span>
+        <input type="number" id="priceMax" min="0" step="1" placeholder="$ max" inputmode="numeric" aria-label="Maximum price" />
+        <span class="ct" id="priceCount"></span>
+      </div>
+      <p id="priceHint" class="help" role="status" hidden>Min is above max. Fix one to apply the range.</p>
+    </section>
 
-    <footer>City data: GeoNames (CC BY 4.0) and US Census Bureau.</footer>
+    <footer>
+      <div class="privacy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+        Runs only in your browser · Free
+      </div>
+      City data: GeoNames (CC BY 4.0) and US Census Bureau.
+    </footer>
 
     <script src="lib/geo.js"></script>
     <script src="lib/listing.js"></script>

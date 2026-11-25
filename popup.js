@@ -1,18 +1,25 @@
 (async () => {
   const G = globalThis.MLFGeo;
+  const L = globalThis.MLFListing;
   const $ = (id) => document.getElementById(id);
   const enabled = $('enabled');
+  const hideFar = $('hideFar');
   const hideShipping = $('hideShipping');
   const hideAds = $('hideAds');
   const hideUnknown = $('hideUnknown');
-  const grace = $('grace');
+  const cutExact = $('cutExact');
+  const cutGrace = $('cutGrace');
   const priceMin = $('priceMin');
   const priceMax = $('priceMax');
   const priceHint = $('priceHint');
-  const graceInfo = $('graceInfo');
-  const graceHelp = $('graceHelp');
   const source = $('source');
-  const counts = $('counts');
+  const total = $('total');
+  const heroText = $('heroText');
+  const farCount = $('farCount');
+  const shipCount = $('shipCount');
+  const adCount = $('adCount');
+  const unknownCount = $('unknownCount');
+  const priceCount = $('priceCount');
   const unknownBox = $('unknownBox');
   const unknownList = $('unknownList');
   const copyUnknown = $('copyUnknown');
@@ -20,16 +27,11 @@
   const farList = $('farList');
   let unknownSamples = [];
 
-  $('graceLabel').textContent = `Allow ${G.GRACE_MILES} mi past the radius`;
-  graceHelp.textContent =
-    `Recommended. Facebook's location isn't 100% accurate, and distances here are ` +
-    `straight lines between town centres, so a town a few miles past your radius ` +
-    `is usually just as close. With this on, only towns more than ${G.GRACE_MILES} ` +
-    `miles past the radius are hidden.`;
-  graceInfo.addEventListener('click', () => {
-    graceHelp.hidden = !graceHelp.hidden;
-    graceInfo.setAttribute('aria-expanded', String(!graceHelp.hidden));
-  });
+  $('graceLabel').textContent = `+${G.GRACE_MILES} mi`;
+  $('cutoff').title =
+    `Facebook's location isn't 100% accurate, and distances here are straight ` +
+    `lines between town centres. "+${G.GRACE_MILES} mi" (recommended) keeps towns ` +
+    `up to ${G.GRACE_MILES} miles past your radius; "Exact" cuts off at the radius.`;
 
   copyUnknown.addEventListener('click', async () => {
     const text = unknownSamples.join('\n');
@@ -55,19 +57,22 @@
   // Facebook's own location filter, as last read by the content script.
   let fbLocation = (await chrome.storage.local.get('fbLocation')).fbLocation ?? null;
 
-  // Shows the toggles and the area being filtered, which is always
+  // Shows the choices and the area being filtered, which is always
   // Marketplace's own location filter.
   function render() {
     enabled.checked = settings.enabled;
+    document.body.classList.toggle('off', !settings.enabled);
+    hideFar.checked = settings.hideFar;
     hideShipping.checked = settings.hideShipping;
     hideAds.checked = settings.hideAds;
     hideUnknown.checked = settings.hideUnknown;
-    grace.checked = settings.grace;
+    cutGrace.checked = settings.grace;
+    cutExact.checked = !settings.grace;
     priceMin.value = settings.priceMin ?? '';
     priceMax.value = settings.priceMax ?? '';
     source.textContent = fbLocation
-      ? `${fbLocation.city}, ${fbLocation.state} · within ${Math.round(fbLocation.radiusMiles)} mi (from Facebook)`
-      : 'Open Marketplace so its location can be read.';
+      ? `Outside ${fbLocation.city}, ${fbLocation.state} · ${Math.round(fbLocation.radiusMiles)} mi`
+      : 'Outside your Marketplace area';
   }
 
   async function save(patch) {
@@ -78,17 +83,20 @@
   }
 
   enabled.addEventListener('change', () => save({ enabled: enabled.checked }));
+  hideFar.addEventListener('change', () => save({ hideFar: hideFar.checked }));
   hideShipping.addEventListener('change', () => save({ hideShipping: hideShipping.checked }));
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
-  grace.addEventListener('change', () => save({ grace: grace.checked }));
+  cutExact.addEventListener('change', () => save({ grace: false }));
+  cutGrace.addEventListener('change', () => save({ grace: true }));
+
   // Saved as a pair, while typing: the popup closes the moment the user
   // clicks back on the page, often before the field loses focus. A minimum
   // above the maximum is left unsaved until the other field catches up.
   let priceTimer = null;
   const savePrice = () => {
     clearTimeout(priceTimer);
-    const range = globalThis.MLFListing.normalizePriceRange(priceMin.value, priceMax.value);
+    const range = L.normalizePriceRange(priceMin.value, priceMax.value);
     priceHint.hidden = range !== null;
     if (range && (range.priceMin !== settings.priceMin || range.priceMax !== settings.priceMax)) save(range);
   };
@@ -100,11 +108,8 @@
     field.addEventListener('change', savePrice);
   }
 
-  // The counts are redrawn only when they change, so the periodic refresh
-  // does not take keyboard focus off the "unknown city" toggle.
-  let lastCounts = null;
-
-  // A count phrase that shows or hides the list box below the counts.
+  // A count that shows or hides the list box under its row. It sits inside
+  // the row's label, so its click must not also flip the row's eye.
   function listToggle(text, box) {
     const toggle = document.createElement('button');
     toggle.type = 'button';
@@ -112,12 +117,30 @@
     toggle.textContent = text;
     toggle.setAttribute('aria-expanded', String(!box.hidden));
     toggle.setAttribute('aria-controls', box.id);
-    toggle.addEventListener('click', () => {
+    toggle.addEventListener('click', (event) => {
+      event.preventDefault();
       box.hidden = !box.hidden;
       toggle.setAttribute('aria-expanded', String(!box.hidden));
     });
     return toggle;
   }
+
+  // "9 hidden" or "3 shown"; nothing for none.
+  const countText = (n, hidden) => (n > 0 ? `${n} ${hidden ? 'hidden' : 'shown'}` : '');
+
+  function showList(countEl, text, box, list, items) {
+    if (text && items.length) {
+      countEl.replaceChildren(listToggle(text, box));
+      list.replaceChildren(...items);
+    } else {
+      countEl.textContent = text;
+      box.hidden = true;
+    }
+  }
+
+  // The counts are redrawn only when they change, so the periodic refresh
+  // does not take keyboard focus off a control.
+  let lastCounts = null;
 
   async function refreshCounts() {
     let tab;
@@ -125,58 +148,55 @@
       [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const c = await chrome.tabs.sendMessage(tab.id, { type: 'getCounts' });
       if (!c?.active) throw new Error('not on Marketplace');
-      const key = JSON.stringify(c);
+      const key = JSON.stringify([c, settings.hideFar]);
       if (key === lastCounts) return;
       lastCounts = key;
-      counts.replaceChildren('Hidden: ');
 
-      // "N out of range" opens the hidden cities, nearest first.
-      const far = c.farCities ?? [];
-      const farText = `${c.far} out of range`;
-      if (c.far > 0 && far.length) {
-        counts.append(listToggle(farText, farBox));
-        farList.replaceChildren(
-          ...far.map(({ label, count, miles }) => {
-            const li = document.createElement('li');
-            const name = document.createElement('span');
-            name.textContent = count > 1 ? `${label} (${count})` : label;
-            const dist = document.createElement('span');
-            dist.className = 'miles';
-            dist.textContent = miles === null ? 'out of state' : `${miles} mi`;
-            li.append(name, dist);
-            return li;
-          }),
-        );
-      } else {
-        counts.append(farText);
-        farBox.hidden = true;
-      }
-      counts.append(`, ${c.ship} shipping, ${c.ad} ads, ${c.price ?? 0} outside price range · `);
+      total.textContent = String(c.hidden ?? 0);
+      heroText.textContent = `listing${c.hidden === 1 ? '' : 's'} hidden on this page`;
 
-      // "N unknown city" opens the location lines that were not recognised.
-      const unknownText = `${c.unknown} unknown city${c.unknownHidden ? ' (hidden)' : ''}`;
+      showList(
+        farCount,
+        countText(c.far, settings.hideFar),
+        farBox,
+        farList,
+        (c.farCities ?? []).map(({ label, count, miles }) => {
+          const li = document.createElement('li');
+          const name = document.createElement('span');
+          name.textContent = count > 1 ? `${label} (${count})` : label;
+          const dist = document.createElement('span');
+          dist.className = 'miles';
+          dist.textContent = miles === null ? 'out of state' : `${miles} mi`;
+          li.append(name, dist);
+          return li;
+        }),
+      );
+      shipCount.textContent = countText(c.ship, true);
+      adCount.textContent = countText(c.ad, true);
+      priceCount.textContent = countText(c.price ?? 0, true);
+
       unknownSamples = c.unknownSamples ?? [];
-      if (c.unknown > 0 && unknownSamples.length) {
-        counts.append(listToggle(unknownText, unknownBox));
-        unknownList.replaceChildren(
-          ...unknownSamples.map((line) => {
-            const li = document.createElement('li');
-            li.textContent = line;
-            return li;
-          }),
-        );
-      } else {
-        counts.append(unknownText);
-        unknownBox.hidden = true;
-      }
+      showList(
+        unknownCount,
+        countText(c.unknown, c.unknownHidden),
+        unknownBox,
+        unknownList,
+        unknownSamples.map((line) => {
+          const li = document.createElement('li');
+          li.textContent = line;
+          return li;
+        }),
+      );
     } catch {
       lastCounts = null;
       unknownBox.hidden = true;
       farBox.hidden = true;
+      for (const el of [farCount, shipCount, adCount, unknownCount, priceCount]) el.textContent = '';
+      total.textContent = '–';
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.
       const url = tab?.url ?? '';
-      counts.textContent = url.startsWith('https://www.facebook.com/marketplace')
+      heroText.textContent = url.startsWith('https://www.facebook.com/marketplace')
         ? 'Refresh this tab to start filtering'
         : 'Open Facebook Marketplace to see counts';
     }

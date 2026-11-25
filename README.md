@@ -9,14 +9,14 @@ for: listings near you. Marketplace pads the feed with shipped items, listings
 outside your radius, and seller ads. Marketplace Declutter hides all three.
 
 <p align="center">
-  <img src="docs/images/popup-v2.png" width="300" alt="The popup, showing Facebook's location, the 15-mile grace toggle, and how many listings were hidden" />
+  <img src="docs/images/popup-v3.png" width="300" alt="The popup: 41 listings hidden, eye buttons for distance, shipping-only, seller ads and unknown cities, the Exact or +15 mi cut-off, and a price range" />
 </p>
 
 ## What it hides
 
 | Listing | Hidden when |
 | --- | --- |
-| Out of range | Its city is more than your radius + 15 miles from your centre (the 15-mile grace can be turned off) |
+| Out of range | Its city is more than your radius + 15 miles from your centre (the 15-mile grace can be turned off; distance filtering can be turned off too) |
 | Shipping-only | It is marked "Ships to you" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
 | Out of price range | Its price is below your minimum or above your maximum (blank = no limit; unreadable prices are kept) |
@@ -45,7 +45,7 @@ change the area, change it in Marketplace.
 
 Because Facebook's location isn't exact and distances are measured in a
 straight line between town centres, towns up to 15 miles past the radius are
-kept. Turn off **Allow 15 mi past the radius** in the popup to cut off at the
+kept. Choose **Exact** under Cut-off in the popup to cut off at the
 radius exactly.
 
 The popup also shows how many listings were hidden on the current page and why.
