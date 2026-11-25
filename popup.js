@@ -26,7 +26,7 @@
   let unknownSamples = [];
 
   $('graceNote').textContent =
-    'Includes a little extra room around your area.';
+    'Your area, plus a small buffer.';
 
   copyUnknown.addEventListener('click', async () => {
     const text = unknownSamples.join('\n');
