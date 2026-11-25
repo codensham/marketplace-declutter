@@ -5,6 +5,8 @@ scripts/raw/
 # AI assistant and agent tooling
 .claude/
 .superpowers/
+docs/superpowers/
+.playwright-mcp/
 CLAUDE.local.md
 .cursor/
 .aider*
@@ -15,6 +17,13 @@ CLAUDE.local.md
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Caches and test output
+__pycache__/
+*.pyc
+coverage/
+.nyc_output/
+*.tmp
 
 # Packaged builds, logs, local env
 *.zip
