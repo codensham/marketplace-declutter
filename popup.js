@@ -18,6 +18,11 @@
   const adCount = $('adCount');
   const unknownCount = $('unknownCount');
   const priceCount = $('priceCount');
+  const hideWords = $('hideWords');
+  const editWords = $('editWords');
+  const wordsBox = $('wordsBox');
+  const blockWords = $('blockWords');
+  const wordCount = $('wordCount');
   const unknownBox = $('unknownBox');
   const unknownList = $('unknownList');
   const copyUnknown = $('copyUnknown');
@@ -63,6 +68,10 @@
     hideUnknown.checked = settings.hideUnknown;
     priceMin.value = settings.priceMin ?? '';
     priceMax.value = settings.priceMax ?? '';
+    hideWords.checked = settings.hideWords;
+    editWords.textContent = settings.blockWords.length ? settings.blockWords.join(', ') : 'add words';
+    // Not while typing: rewriting the field would move the cursor.
+    if (document.activeElement !== blockWords) blockWords.value = settings.blockWords.join(', ');
     source.textContent = fbLocation
       ? `Outside ${fbLocation.city}, ${fbLocation.state} · ${Math.round(fbLocation.radiusMiles)} mi`
       : 'Outside your Marketplace area';
@@ -80,6 +89,32 @@
   hideShipping.addEventListener('change', () => save({ hideShipping: hideShipping.checked }));
   hideAds.addEventListener('change', () => save({ hideAds: hideAds.checked }));
   hideUnknown.addEventListener('change', () => save({ hideUnknown: hideUnknown.checked }));
+  hideWords.addEventListener('change', () => save({ hideWords: hideWords.checked }));
+
+  // The word list opens under its row. The button sits inside the row's
+  // label, so its click must not also flip the row's eye.
+  editWords.addEventListener('click', (event) => {
+    event.preventDefault();
+    wordsBox.hidden = !wordsBox.hidden;
+    editWords.setAttribute('aria-expanded', String(!wordsBox.hidden));
+    if (!wordsBox.hidden) blockWords.focus();
+  });
+
+  // Saved while typing, like the price: the popup can close at any moment.
+  let wordsTimer = null;
+  const saveWords = () => {
+    clearTimeout(wordsTimer);
+    const words = L.parseWords(blockWords.value);
+    if (String(words) !== String(settings.blockWords)) save({ blockWords: words });
+  };
+  blockWords.addEventListener('input', () => {
+    clearTimeout(wordsTimer);
+    wordsTimer = setTimeout(saveWords, 400);
+  });
+  blockWords.addEventListener('change', () => {
+    saveWords();
+    blockWords.value = settings.blockWords.join(', ');
+  });
 
   // Saved as a pair, while typing: the popup closes the moment the user
   // clicks back on the page, often before the field loses focus. A minimum
@@ -165,6 +200,7 @@
       shipCount.textContent = countText(c.ship, true);
       adCount.textContent = countText(c.ad, true);
       priceCount.textContent = countText(c.price ?? 0, true);
+      wordCount.textContent = countText(c.word ?? 0, true);
 
       unknownSamples = c.unknownSamples ?? [];
       showList(
@@ -182,7 +218,7 @@
       lastCounts = null;
       unknownBox.hidden = true;
       farBox.hidden = true;
-      for (const el of [farCount, shipCount, adCount, unknownCount, priceCount]) el.textContent = '';
+      for (const el of [farCount, shipCount, adCount, unknownCount, priceCount, wordCount]) el.textContent = '';
       total.textContent = '–';
       // A Marketplace tab that does not answer was open before the extension
       // was installed or reloaded, so the filter is not running in it.

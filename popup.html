@@ -184,6 +184,17 @@
         font-size: inherit;
         text-decoration: underline dotted;
       }
+      #wordsBox input {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 4px 6px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text);
+        font: inherit;
+      }
+      #wordsBox,
       #unknownBox,
       #farBox {
         margin: 2px 0 4px 38px;
@@ -257,7 +268,7 @@
       <p class="lbl" id="listLbl">Listings</p>
       <label class="row">
         <input type="checkbox" id="hideShipping" class="eye" aria-label="Hide shipping-only listings" />
-        <span>Shipping-only</span>
+        <span title="Includes eBay partner listings">Shipping-only</span>
         <span class="ct" id="shipCount"></span>
       </label>
       <label class="row">
@@ -265,6 +276,15 @@
         <span>Seller ads</span>
         <span class="ct" id="adCount"></span>
       </label>
+      <label class="row">
+        <input type="checkbox" id="hideWords" class="eye" aria-label="Hide listings with blocked words" />
+        <span>Words: <button type="button" class="link" id="editWords" aria-expanded="false" aria-controls="wordsBox"></button></span>
+        <span class="ct" id="wordCount"></span>
+      </label>
+      <div id="wordsBox" hidden>
+        <input type="text" id="blockWords" placeholder="wanted, ISO" aria-label="Blocked words, separated by commas" />
+        <p class="help">Hides listings whose title has any of these words. Separate them with commas.</p>
+      </div>
       <label class="row">
         <input type="checkbox" id="hideUnknown" class="eye" aria-label="Hide listings with an unknown city" />
         <span>Unknown cities</span>

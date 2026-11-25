@@ -76,3 +76,30 @@ test('recordViewed prunes oldest', () => {
 test('today', () => {
   assert.equal(L.today(86400000 * 3 + 5), 3);
 });
+
+test('parseWords splits, trims and drops blanks and repeats', () => {
+  assert.deepEqual(L.parseWords(' wanted, ISO ,, iso,parts  only '), ['wanted', 'ISO', 'parts only']);
+  assert.deepEqual(L.parseWords(''), []);
+});
+
+test('blockedWord matches whole words in any case', () => {
+  const words = ['wanted', 'ISO'];
+  assert.equal(L.blockedWord('ISO: kids bike', words), 'ISO');
+  assert.equal(L.blockedWord('Wanted - Couch', words), 'wanted');
+  assert.equal(L.blockedWord('(iso) dresser', words), 'ISO');
+  assert.equal(L.blockedWord('Isolated cabin print', words), null);
+  assert.equal(L.blockedWord('Unwanted gift, new', words), null);
+  assert.equal(L.blockedWord('Car parts only', ['parts only']), 'parts only');
+  assert.equal(L.blockedWord('C++ book', ['c++']), 'c++');
+});
+
+test('withWords hides kept cards with a blocked word, but not by their city', () => {
+  const S = { hideWords: true, blockWords: ['wanted', 'ISO'] };
+  const card = ['$0', 'ISO twin bed frame', 'Austin, TX'];
+  assert.equal(L.withWords('keep', card, 'Austin, TX', S), 'word');
+  assert.equal(L.withWords('unknown', card, 'Austin, TX', S), 'word');
+  assert.equal(L.withWords('far', card, 'Austin, TX', S), 'far');
+  assert.equal(L.withWords('keep', card, 'Austin, TX', { ...S, hideWords: false }), 'keep');
+  assert.equal(L.withWords('keep', card, 'Austin, TX', { ...S, blockWords: [] }), 'keep');
+  assert.equal(L.withWords('keep', ['$5', 'Lamp', 'Wanted, TX'], 'Wanted, TX', S), 'keep');
+});

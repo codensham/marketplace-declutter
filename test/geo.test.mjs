@@ -280,3 +280,16 @@ test('hideFar off keeps far cards visible', () => {
   assert.equal(G.hides('far', { ...G.DEFAULT_SETTINGS, hideFar: false }), false);
   assert.equal(G.sameFilter(S, { ...S, hideFar: false }), false);
 });
+
+// eBay listings in the feed, as seen live (Nov 2026).
+test('decideCard treats partner listings as shipping-only', () => {
+  const near = ['Partner listing', '$12', 'Card lot', 'Round Rock, TX'];
+  const garbled = ['Partner listing', '$28', 'Card lot', 'This, GES'];
+  assert.equal(G.isPartnerCard(near), true);
+  assert.equal(G.isPartnerCard(['$12', 'Partner pack', 'Austin, TX']), false);
+  assert.equal(G.decideCard(near, S, table), 'ship');
+  assert.equal(G.decideCard(garbled, S, table), 'ship');
+  assert.equal(G.decideCard(near, { ...S, hideShipping: false }, table), 'keep');
+  assert.equal(G.decideCard(['Partner listing', '$5', 'Tin', 'Dallas, TX'], { ...S, hideShipping: false }, table), 'far');
+  assert.equal(G.decideCard(['$50', 'Oak desk', 'Dallas, TX'], S, table), 'far');
+});

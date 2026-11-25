@@ -17,9 +17,10 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 | Listing | Hidden when |
 | --- | --- |
 | Out of range | Its city is more than your radius + 15 miles from your centre (distance filtering can be turned off) |
-| Shipping-only | It is marked "Ships to you" (can be turned off) |
+| Shipping-only | It is marked "Ships to you", or is an eBay "Partner listing" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
 | Out of price range | Its price is below your minimum or above your maximum (blank = no limit; unreadable prices are kept) |
+| Blocked word | Its title has one of your blocked words, as a whole word in any case (default: "wanted", "ISO"; edit the list in the popup, or turn it off) |
 | Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
 
 A listing is only hidden when the extension is sure. If a city is not

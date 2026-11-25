@@ -160,7 +160,12 @@
       const lines = cardLinesOf(cell);
       if (!lines.length) continue; // text not rendered yet; look again on the next pass
       const loc = G.extractLocationLine(lines);
-      const verdict = L.withPrice(G.decide(loc, active, table, stateBounds), L.cardPrice(lines), active);
+      const verdict = L.withWords(
+        L.withPrice(G.decideCard(lines, active, table, stateBounds), L.cardPrice(lines), active),
+        lines,
+        loc,
+        active,
+      );
       judged.set(cell, { id, verdict, loc: loc ?? '', tries, isNew: !previous, anchors: [anchor] });
     }
 
@@ -326,6 +331,7 @@
       ship: count('ship'),
       far: count('far'),
       price: count('price'),
+      word: count('word'),
       hidden: document.querySelectorAll('[data-mlf-hidden]').length,
       unknown: count('unknown'),
       unknownSamples: G.unknownSamples(
