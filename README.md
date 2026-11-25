@@ -20,7 +20,7 @@ outside your radius, and seller ads. Marketplace Declutter hides all three.
 | Shipping-only | It is marked "Ships to you", or is an eBay "Partner listing" (can be turned off) |
 | Seller ad | It is marked "Ad from seller" (can be turned off) |
 | Out of price range | Its price is below your minimum or above your maximum (blank = no limit; unreadable prices are kept) |
-| Blocked word | Its title has one of your blocked words, as a whole word in any case (default: "wanted", "ISO"; edit the list in the popup, or turn it off) |
+| Removed keyword | Its title has one of your removed keywords, as a whole word in any case (default: "wanted", "ISO"; edit the list in the popup, or turn it off) |
 | Repeat | Facebook shows the same listing again on the page; the first copy stays (can be turned off) |
 | Unknown city | Off by default; hidden only if you turn on "Hide unknown cities" |
 
